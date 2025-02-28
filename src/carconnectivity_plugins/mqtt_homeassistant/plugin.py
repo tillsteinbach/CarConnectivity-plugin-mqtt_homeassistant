@@ -46,7 +46,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
 
     def startup(self) -> None:
         LOG.info("Starting MQTT Home Assistant plugin")
-        # Try to find the MQTT plugin
+        # Try to find the MQTT plugin in car connectivity
         if 'mqtt' not in self.car_connectivity.plugins.plugins:
             LOG.error("MQTT plugin not found, MQTT Home Assistant plugin will not work")
             self._is_healthy = False
