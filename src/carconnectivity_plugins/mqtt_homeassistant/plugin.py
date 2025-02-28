@@ -50,18 +50,19 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         if 'mqtt' not in self.car_connectivity.plugins.plugins:
             LOG.error("MQTT plugin not found, MQTT Home Assistant plugin will not work")
             self._is_healthy = False
-        if not isinstance(self.car_connectivity.plugins.plugins['mqtt'], MqttPlugin):
-            LOG.error("MQTT plugin is not an instance of MqttPlugin, MQTT Home Assistant plugin will not work")
-            self._is_healthy = False
         else:
-            self.mqtt_plugin = self.car_connectivity.plugins.plugins['mqtt']
+            if not isinstance(self.car_connectivity.plugins.plugins['mqtt'], MqttPlugin):
+                LOG.error("MQTT plugin is not an instance of MqttPlugin, MQTT Home Assistant plugin will not work")
+                self._is_healthy = False
+            else:
+                self.mqtt_plugin = self.car_connectivity.plugins.plugins['mqtt']
 
-        if self.mqtt_plugin is None:
-            LOG.error("MQTT plugin is None, MQTT Home Assistant plugin will not work")
-            self._is_healthy = False
-        else:
-            self.mqtt_plugin.mqtt_client.add_on_message_callback(self._on_message_callback)
-            self.mqtt_plugin.mqtt_client.add_on_connect_callback(self._on_connect_callback)
+            if self.mqtt_plugin is None:
+                LOG.error("MQTT plugin is None, MQTT Home Assistant plugin will not work")
+                self._is_healthy = False
+            else:
+                self.mqtt_plugin.mqtt_client.add_on_message_callback(self._on_message_callback)
+                self.mqtt_plugin.mqtt_client.add_on_connect_callback(self._on_connect_callback)
 
         flags: Observable.ObserverEvent = Observable.ObserverEvent.ENABLED | Observable.ObserverEvent.DISABLED
         self.car_connectivity.add_observer(self._on_carconnectivity_event, flags, priority=Observable.ObserverPriority.USER_MID)
