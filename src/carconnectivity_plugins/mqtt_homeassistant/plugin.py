@@ -91,6 +91,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             if vehicle.enabled:
                 self._publish_homeassistant_discovery_vehicle(vehicle, force=force)
 
+    # pylint: disable-next=too-many-branches, too-many-statements
     def _publish_homeassistant_discovery_vehicle(self, vehicle: GenericVehicle, force=False) -> None:
         """
         Publish the Home Assistant discovery message.
@@ -156,7 +157,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.connection_state.get_absolute_path()}',
                 'unique_id': f'{vin}_connection_state'
             }
-        if vehicle.drives is not None and vehicle.drives.enabled:
+        if vehicle.drives is not None and vehicle.drives.enabled:  # pylint: disable=too-many-nested-blocks
             if vehicle.drives.total_range.enabled and vehicle.drives.total_range.value is not None and vehicle.drives.total_range.unit is not None:
                 discovery_message['cmps'][f'{vin}_total_range'] = {
                     'p': 'sensor',
@@ -288,6 +289,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                             'unique_id': f'{vin}_{light_id}_state'
                         }
         if vehicle.position.enabled:
+            # pylint: disable-next=too-many-boolean-expressions
             if vehicle.position.latitude.enabled and vehicle.position.latitude.value is not None \
                     and vehicle.position.longitude.enabled and vehicle.position.longitude.value is not None \
                     and vehicle.position.latitude.unit is not None and vehicle.position.longitude.unit is not None:
@@ -432,6 +434,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             if self.homeassistant_discovery and msg.payload.lower() == b'online':
                 self._publish_homeassistant_discovery(force=True)
 
+    # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def _on_connect_callback(self, mqttc, obj, flags, reason_code, properties) -> None:  # noqa: C901
         """
         Callback for connection to the MQTT broker.

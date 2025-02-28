@@ -22,6 +22,7 @@ class PluginUI(BasePluginUI):
                                                                url_prefix='/mqtt_homeassistant', template_folder=os.path.dirname(__file__) + '/templates')
         super().__init__(plugin, blueprint=blueprint)
 
+    # pylint: disable=useless-parent-delegation
     def get_nav_items(self) -> List[Dict[Literal['text', 'url', 'sublinks', 'divider'], Union[str, List]]]:
         """
         Generates a list of navigation items for the MQTT Home Assistant plugin UI.
