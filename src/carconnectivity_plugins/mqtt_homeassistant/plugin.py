@@ -104,9 +104,6 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             'device': {
                 'ids': vin,
                 'sn': vin,
-                'availability_topic': f'{self.mqtt_plugin.mqtt_client.prefix}/plugins/{self.mqtt_plugin.mqtt_client.plugin_id}/connected',
-                'payload_not_available': 'False',
-                'payload_available': 'True',
             },
             'origin': {
                 'name': 'carconnectivity-plugin-mqtt',
