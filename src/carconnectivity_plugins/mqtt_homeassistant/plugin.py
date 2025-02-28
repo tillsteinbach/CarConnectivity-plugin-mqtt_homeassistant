@@ -9,6 +9,7 @@ from carconnectivity.util import config_remove_credentials
 from carconnectivity.vehicle import GenericVehicle
 from carconnectivity.drive import ElectricDrive, CombustionDrive
 from carconnectivity.observable import Observable
+from carconnectivity.errors import ConfigurationError
 
 from carconnectivity_plugins.base.plugin import BasePlugin
 
@@ -48,21 +49,16 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         LOG.info("Starting MQTT Home Assistant plugin")
         # Try to find the MQTT plugin in car connectivity
         if 'mqtt' not in self.car_connectivity.plugins.plugins:
-            LOG.error("MQTT plugin not found, MQTT Home Assistant plugin will not work")
-            self._is_healthy = False
-        else:
-            if not isinstance(self.car_connectivity.plugins.plugins['mqtt'], MqttPlugin):
-                LOG.error("MQTT plugin is not an instance of MqttPlugin, MQTT Home Assistant plugin will not work")
-                self._is_healthy = False
-            else:
-                self.mqtt_plugin = self.car_connectivity.plugins.plugins['mqtt']
+            raise ConfigurationError("MQTT plugin not found, MQTT Home Assistant plugin will not work")
+        if not isinstance(self.car_connectivity.plugins.plugins['mqtt'], MqttPlugin):
+            raise ConfigurationError("MQTT plugin is not an instance of MqttPlugin, MQTT Home Assistant plugin will not work")
+        self.mqtt_plugin = self.car_connectivity.plugins.plugins['mqtt']
 
-            if self.mqtt_plugin is None:
-                LOG.error("MQTT plugin is None, MQTT Home Assistant plugin will not work")
-                self._is_healthy = False
-            else:
-                self.mqtt_plugin.mqtt_client.add_on_message_callback(self._on_message_callback)
-                self.mqtt_plugin.mqtt_client.add_on_connect_callback(self._on_connect_callback)
+        if self.mqtt_plugin is None:
+            raise ConfigurationError("MQTT plugin is None, MQTT Home Assistant plugin will not work")
+
+        self.mqtt_plugin.mqtt_client.add_on_message_callback(self._on_message_callback)
+        self.mqtt_plugin.mqtt_client.add_on_connect_callback(self._on_connect_callback)
 
         flags: Observable.ObserverEvent = Observable.ObserverEvent.ENABLED | Observable.ObserverEvent.DISABLED
         self.car_connectivity.add_observer(self._on_carconnectivity_event, flags, priority=Observable.ObserverPriority.USER_MID)
