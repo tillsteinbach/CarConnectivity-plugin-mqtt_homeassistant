@@ -33,7 +33,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
     """
     def __init__(self, plugin_id: str, car_connectivity: CarConnectivity, config: Dict) -> None:
         BasePlugin.__init__(self, plugin_id=plugin_id, car_connectivity=car_connectivity, config=config, log=LOG)
-        self._is_healthy = True
+        self._healthy = False
         self.mqtt_plugin: Optional[MqttPlugin] = None
         self.homeassistant_discovery: bool = True
         self.homeassistant_discovery_hashes: Dict[str, int] = {}
@@ -63,6 +63,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         flags: Observable.ObserverEvent = Observable.ObserverEvent.ENABLED | Observable.ObserverEvent.DISABLED
         self.car_connectivity.add_observer(self._on_carconnectivity_event, flags, priority=Observable.ObserverPriority.USER_MID, on_transaction_end=True)
 
+        self._healthy = True
         LOG.debug("Starting  MQTT Home Assistant plugin done")
 
     def shutdown(self) -> None:
@@ -76,15 +77,6 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
 
     def get_type(self) -> str:
         return "carconnectivity-plugin-mqtt_homeassistant"
-
-    def is_healthy(self) -> bool:
-        """
-        Returns whether the plugin is healthy.
-
-        Returns:
-            bool: True if the connector is healthy, False otherwise.
-        """
-        return self._is_healthy
 
     def _publish_homeassistant_discovery(self, force=False) -> None:
         for vehicle in self.car_connectivity.garage.list_vehicles():
@@ -460,3 +452,6 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 if self.mqtt_plugin is not None:
                     self.mqtt_plugin.mqtt_client.subscribe('homeassistant/status', qos=1)
                     self._publish_homeassistant_discovery(force=True)
+
+    def is_healthy(self) -> bool:
+        return self._healthy and super().is_healthy()
