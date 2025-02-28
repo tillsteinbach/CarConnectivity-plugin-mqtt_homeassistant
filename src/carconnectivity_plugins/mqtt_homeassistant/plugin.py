@@ -110,7 +110,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         if not self.mqtt_plugin.mqtt_client.is_connected():
             return
         vin: str = vehicle.vin.value
-        discovery_topic = f'{self.active_config['homeassistant_prefix']}/device/{vin}/config'
+        discovery_topic = f'{self.active_config["homeassistant_prefix"]}/device/{vin}/config'
         discovery_message = {
             'device': {
                 'ids': vin,
