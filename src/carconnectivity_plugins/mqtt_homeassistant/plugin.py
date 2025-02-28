@@ -329,7 +329,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'p': 'switch',
                     'name': 'Start/Stop Climatization',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.state.get_absolute_path()}',
-                    'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.commands.commands['start-stop'].get_absolute_path()}'
+                    'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.commands.commands["start-stop"].get_absolute_path()}'
                     + '_writetopic',
                     'payload_on': 'start',
                     'payload_off': 'stop',
