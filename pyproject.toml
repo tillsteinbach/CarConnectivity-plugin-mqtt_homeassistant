@@ -14,7 +14,7 @@ authors = [
     { name = "Till Steinbach" }
 ]
 dependencies = [
-    "carconnectivity>=0.4a6",
+    "carconnectivity>=0.4a8",
     "carconnectivity-plugin-mqtt>=0.4a8",
     "requests~=2.32.3"
 ]
