@@ -61,7 +61,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         self.mqtt_plugin.mqtt_client.add_on_connect_callback(self._on_connect_callback)
 
         flags: Observable.ObserverEvent = Observable.ObserverEvent.ENABLED | Observable.ObserverEvent.DISABLED
-        self.car_connectivity.add_observer(self._on_carconnectivity_event, flags, priority=Observable.ObserverPriority.USER_MID)
+        self.car_connectivity.add_observer(self._on_carconnectivity_event, flags, priority=Observable.ObserverPriority.USER_MID, on_transaction_end=True)
 
         LOG.debug("Starting  MQTT Home Assistant plugin done")
 
