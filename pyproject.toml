@@ -15,7 +15,7 @@ authors = [
 ]
 dependencies = [
     "carconnectivity>=0.4a6",
-    "carconnectivity-plugin-mqtt>=0.4a6",
+    "carconnectivity-plugin-mqtt>=0.4a8",
     "requests~=2.32.3"
 ]
 readme = "README.md"
