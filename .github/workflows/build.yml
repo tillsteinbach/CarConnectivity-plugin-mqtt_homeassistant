@@ -45,7 +45,7 @@ jobs:
       run: |
         set +e
         output=$(carconnectivity test/integration_test/carConnectivity.json 2>&1)
-        echo "$output" | grep -q 'There was a problem with the configuration: No ABRP Tokens specified in config ("tokens" missing)'
+        echo "$output" | grep -q 'There was a problem with the configuration: MQTT plugin not found, MQTT Home Assistant plugin will not work'
         if [ $? -ne 0 ]; then
           echo "$output"
           exit 1
