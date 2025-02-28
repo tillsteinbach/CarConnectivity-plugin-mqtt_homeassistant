@@ -432,7 +432,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         """
         del mqttc
         del obj
-        if msg.topic == f'{self.active_config['homeassistant_prefix']}/status':
+        if msg.topic == f'{self.active_config["homeassistant_prefix"]}/status':
             if self.homeassistant_discovery and msg.payload.lower() == b'online':
                 self._publish_homeassistant_discovery(force=True)
 
