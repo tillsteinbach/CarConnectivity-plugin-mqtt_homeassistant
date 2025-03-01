@@ -20,7 +20,7 @@ from carconnectivity_plugins.mqtt_homeassistant._version import __version__
 
 SUPPORT_IMAGES = False
 try:
-    from PIL import Image
+    from PIL import Image  # pylint: disable=unused-import # noqa: F401
     SUPPORT_IMAGES = True
 except ImportError:
     pass
@@ -91,7 +91,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             if vehicle.enabled:
                 self._publish_homeassistant_discovery_vehicle(vehicle, force=force)
 
-    # pylint: disable-next=too-many-branches, too-many-statements
+    # pylint: disable-next=too-many-branches, too-many-statements, too-many-locals
     def _publish_homeassistant_discovery_vehicle(self, vehicle: GenericVehicle, force=False) -> None:
         """
         Publish the Home Assistant discovery message.
