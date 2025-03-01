@@ -11,8 +11,11 @@ from carconnectivity.vehicle import GenericVehicle, ElectricVehicle
 from carconnectivity.drive import ElectricDrive, CombustionDrive
 from carconnectivity.observable import Observable
 from carconnectivity.errors import ConfigurationError
-from carconnectivity.attributes import FloatAttribute
+from carconnectivity.attributes import FloatAttribute, EnumAttribute, GenericAttribute
 from carconnectivity.position import Position
+from carconnectivity.charging import Charging
+from carconnectivity.climatization import Climatization
+from carconnectivity.units import Temperature
 
 from carconnectivity_plugins.base.plugin import BasePlugin
 
@@ -28,7 +31,7 @@ except ImportError:
     pass
 
 if TYPE_CHECKING:
-    from typing import Dict, Optional
+    from typing import Dict, Optional, Any
     from carconnectivity.carconnectivity import CarConnectivity
 
 LOG: logging.Logger = logging.getLogger("carconnectivity.plugins.mqtt_homeassistant")
@@ -133,6 +136,16 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         if vehicle.software is not None and vehicle.software.enabled and vehicle.software.version.enabled and vehicle.software.version.value is not None:
             discovery_message['device']['sw'] = vehicle.software.version.value
 
+        if vehicle.commands.enabled and 'wake-sleep' in vehicle.commands.commands:
+            discovery_message['cmps'][f'{vin}_wake'] = {
+                'p': 'button',
+                'name': 'Wakeup',
+                'icon': 'mdi:sleep-off',
+                'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.commands.commands["wake-sleep"].get_absolute_path()}'
+                + '_writetopic',
+                'payload_press': 'wake',
+                'unique_id': f'{vin}_wake'
+            }
         if vehicle.odometer.enabled and vehicle.odometer.value is not None and vehicle.odometer.unit is not None:
             discovery_message['cmps'][f'{vin}_odometer'] = {
                 'p': 'sensor',
@@ -367,18 +380,57 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 if vehicle.climatization.state.value_type is not None and issubclass(vehicle.climatization.state.value_type, Enum):
                     discovery_message['cmps'][f'{vin}_climatization_state']['options'] = [item.value for item in vehicle.climatization.state.value_type]
             if vehicle.climatization.commands.enabled and 'start-stop' in vehicle.climatization.commands.commands:
+                def __mode_to_command_hook(attribute: GenericAttribute, value: Any) -> Any:
+                    del attribute
+                    if value == 'off':
+                        return 'stop'
+                    if value == 'auto':
+                        return 'start'
+                    return value
+                # pylint: disable-next=protected-access
+                vehicle.climatization.commands.commands['start-stop']._add_on_set_hook(__mode_to_command_hook, early_hook=True)
                 discovery_message['cmps'][f'{vin}_climatization_start_stop'] = {
-                    'p': 'switch',
-                    'name': 'Start/Stop Climatization',
-                    'icon': 'mdi:air-conditioner',
-                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.state.get_absolute_path()}',
-                    'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.commands.commands["start-stop"].get_absolute_path()}'
-                    + '_writetopic',
-                    'payload_on': 'start',
-                    'payload_off': 'stop',
-                    'state_on': ['heating', 'cooling', 'ventilation'],
-                    'state_off': 'off',
-                    'unique_id': f'{vin}_climatization_start_stop'
+                        'p': 'climate',
+                        'name': 'Start/Stop Climatization',
+                        'icon': 'mdi:air-conditioner',
+                        'action_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.get_absolute_path()}/hvac_action',
+                        'mode_command_topic':
+                        f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.commands.commands["start-stop"].get_absolute_path()}_writetopic',
+                        'mode_state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.get_absolute_path()}/hvac_mode',
+                        'modes': ['off', 'auto'],
+                        'power_command_topic':
+                        f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.commands.commands["start-stop"].get_absolute_path()}'
+                        + '_writetopic',
+                        'payload_on': 'start',
+                        'payload_off': 'stop',
+                        'unique_id': f'{vin}_climatization_start_stop'
+                    }
+            if vehicle.climatization.settings.enabled and vehicle.climatization.settings.target_temperature.enabled:
+                if vehicle.climatization.settings.target_temperature.value is not None:
+                    discovery_message['cmps'][f'{vin}_climatization_start_stop']['temperature_state_topic'] = \
+                        f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.settings.target_temperature.get_absolute_path()}'
+                if vehicle.climatization.settings.target_temperature.maximum is not None:
+                    discovery_message['cmps'][f'{vin}_climatization_start_stop']['max_temp'] = vehicle.climatization.settings.target_temperature.maximum
+                if vehicle.climatization.settings.target_temperature.minimum is not None:
+                    discovery_message['cmps'][f'{vin}_climatization_start_stop']['min_temp'] = vehicle.climatization.settings.target_temperature.minimum
+                if vehicle.climatization.settings.target_temperature.precision is not None:
+                    discovery_message['cmps'][f'{vin}_climatization_start_stop']['temp_step'] = vehicle.climatization.settings.target_temperature.precision
+                if vehicle.climatization.settings.target_temperature.is_changeable:
+                    discovery_message['cmps'][f'{vin}_climatization_start_stop']['temperature_command_topic'] = \
+                        f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.settings.target_temperature.get_absolute_path()}_writetopic'
+                if vehicle.climatization.settings.target_temperature.unit is not None:
+                    if vehicle.climatization.settings.target_temperature.unit.value == Temperature.C:
+                        discovery_message['cmps'][f'{vin}_climatization_start_stop']['temperature_unit'] = 'C'
+                    elif vehicle.climatization.settings.target_temperature.unit.value == Temperature.F:
+                        discovery_message['cmps'][f'{vin}_climatization_start_stop']['temperature_unit'] = 'F'
+            if vehicle.climatization.estimated_date_reached.enabled and vehicle.climatization.estimated_date_reached.value is not None:
+                discovery_message['cmps'][f'{vin}_climatization_estimated_date_reached'] = {
+                    'p': 'sensor',
+                    'device_class': 'timestamp',
+                    'icon': 'mdi:clock-end',
+                    'name': 'Climatization Estimated Date Reached',
+                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.estimated_date_reached.get_absolute_path()}',
+                    'unique_id': f'{vin}_climatization_estimated_date_reached'
                 }
         if vehicle.outside_temperature.enabled and vehicle.outside_temperature.value is not None and vehicle.outside_temperature.unit is not None:
             discovery_message['cmps'][f'{vin}_outside_temperature'] = {
@@ -444,6 +496,21 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         }
         if isinstance(vehicle, ElectricVehicle):
             if vehicle.charging.connector.connection_state.enabled and vehicle.charging.connector.connection_state.value is not None:
+                if vehicle.charging.commands.enabled and 'start-stop' in vehicle.climatization.commands.commands \
+                        and vehicle.charging.state.enabled and vehicle.charging.state.value is not None:
+                    discovery_message['cmps'][f'{vin}_charging_start_stop'] = {
+                        'p': 'switch',
+                        'name': 'Start/Stop Charging',
+                        'icon': 'mdi:ev-station',
+                        'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.get_absolute_path()}/binarystate',
+                        'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.commands.commands["start-stop"].get_absolute_path()}'
+                        + '_writetopic',
+                        'payload_on': 'start',
+                        'payload_off': 'stop',
+                        'state_on': 'on',
+                        'state_off': 'off',
+                        'unique_id': f'{vin}_charging_start_stop'
+                    }
                 discovery_message['cmps'][f'{vin}_charging_connector_state'] = {
                     'p': 'sensor',
                     'device_class': 'enum',
@@ -565,6 +632,63 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             }
             self.mqtt_plugin.mqtt_client.publish(topic=topic, qos=1, retain=False, payload=json.dumps(payload))
 
+    def __send_charging_binary_state(self, charging_state: EnumAttribute[Charging.ChargingState]) -> None:
+        if self.mqtt_plugin is None:
+            LOG.critical("MQTT plugin is None")
+        elif charging_state.enabled and charging_state.value is not None:
+            topic: str = f'{self.mqtt_plugin.mqtt_client.prefix}{charging_state.parent.get_absolute_path()}/binarystate'
+            #  pylint: disable-next=protected-access
+            self.mqtt_plugin.mqtt_client._add_topic(topic=topic, with_filter=True, subscribe=False, writeable=False)
+            payload: str = ''
+            if charging_state.value in [Charging.ChargingState.CHARGING, Charging.ChargingState.CONSERVATION, Charging.ChargingState.DISCHARGING]:
+                payload = 'on'
+            elif charging_state.value in [Charging.ChargingState.OFF, Charging.ChargingState.READY_FOR_CHARGING, Charging.ChargingState.ERROR]:
+                payload = 'off'
+            self.mqtt_plugin.mqtt_client.publish(topic=topic, qos=1, retain=False, payload=payload)
+
+    def __send_climatization_binary_state(self, climatization_state: EnumAttribute[Climatization.ClimatizationState]) -> None:
+        if self.mqtt_plugin is None:
+            LOG.critical("MQTT plugin is None")
+        elif climatization_state.enabled and climatization_state.value is not None:
+            topic: str = f'{self.mqtt_plugin.mqtt_client.prefix}{climatization_state.parent.get_absolute_path()}/binarystate'
+            #  pylint: disable-next=protected-access
+            self.mqtt_plugin.mqtt_client._add_topic(topic=topic, with_filter=True, subscribe=False, writeable=False)
+            payload: str = ''
+            if climatization_state.value in [Climatization.ClimatizationState.HEATING,
+                                             Climatization.ClimatizationState.COOLING,
+                                             Climatization.ClimatizationState.VENTILATION]:
+                payload = 'on'
+            elif climatization_state.value in [Climatization.ClimatizationState.OFF]:
+                payload = 'off'
+            self.mqtt_plugin.mqtt_client.publish(topic=topic, qos=1, retain=False, payload=payload)
+
+    def __send_climatization_hvac_topics(self, climatization_state: EnumAttribute[Climatization.ClimatizationState]) -> None:
+        if self.mqtt_plugin is None:
+            LOG.critical("MQTT plugin is None")
+        elif climatization_state.enabled and climatization_state.value is not None:
+            action_topic: str = f'{self.mqtt_plugin.mqtt_client.prefix}{climatization_state.parent.get_absolute_path()}/hvac_action'
+            mode_topic: str = f'{self.mqtt_plugin.mqtt_client.prefix}{climatization_state.parent.get_absolute_path()}/hvac_mode'
+            #  pylint: disable-next=protected-access
+            self.mqtt_plugin.mqtt_client._add_topic(topic=action_topic, with_filter=True, subscribe=False, writeable=False)
+            #  pylint: disable-next=protected-access
+            self.mqtt_plugin.mqtt_client._add_topic(topic=mode_topic, with_filter=True, subscribe=False, writeable=False)
+            action_payload: str = ''
+            mode_payload: str = ''
+            if climatization_state.value == Climatization.ClimatizationState.HEATING:
+                action_payload = 'heating'
+                mode_payload = 'auto'
+            elif climatization_state.value == Climatization.ClimatizationState.COOLING:
+                action_payload = 'cooling'
+                mode_payload = 'auto'
+            elif climatization_state.value == Climatization.ClimatizationState.VENTILATION:
+                action_payload = 'fan'
+                mode_payload = 'auto'
+            elif climatization_state.value in [Climatization.ClimatizationState.OFF]:
+                action_payload = 'off'
+                mode_payload = 'off'
+            self.mqtt_plugin.mqtt_client.publish(topic=action_topic, qos=1, retain=False, payload=action_payload)
+            self.mqtt_plugin.mqtt_client.publish(topic=mode_topic, qos=1, retain=False, payload=mode_payload)
+
     def _on_carconnectivity_event(self, element, flags) -> None:
         """
         Callback for car connectivity events.
@@ -580,7 +704,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         # An attribute is enabled
         if flags & Observable.ObserverEvent.ENABLED:
             self._publish_homeassistant_discovery()
-        elif flags & (Observable.ObserverEvent.ENABLED | Observable.ObserverEvent.VALUE_CHANGED):
+        if flags & (Observable.ObserverEvent.ENABLED | Observable.ObserverEvent.VALUE_CHANGED):
             if self.mqtt_plugin is None:
                 LOG.critical("MQTT plugin is None")
             else:
@@ -588,6 +712,11 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 if isinstance(element, FloatAttribute) and element.id == 'longitude' and element.value is not None \
                         and isinstance(element.parent, Position):
                     self.__send_position_extra_targets(element.parent)
+                elif isinstance(element, EnumAttribute) and element.id == 'state' and element.value_type == Charging.ChargingState:
+                    self.__send_charging_binary_state(element)
+                elif isinstance(element, EnumAttribute) and element.id == 'state' and element.value_type == Climatization.ClimatizationState:
+                    self.__send_climatization_binary_state(element)
+                    self.__send_climatization_hvac_topics(element)
 
     def _on_message_callback(self, mqttc, obj, msg) -> None:  # noqa: C901
         """
@@ -641,6 +770,11 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     if vehicle.position.enabled and vehicle.position.latitude.enabled and vehicle.position.latitude.value is not None \
                             and vehicle.position.longitude.enabled and vehicle.position.longitude.value is not None:
                         self.__send_position_extra_targets(vehicle.position)
+                    if isinstance(vehicle, ElectricVehicle) and vehicle.charging.state.enabled and vehicle.charging.state.value is not None:
+                        self.__send_charging_binary_state(vehicle.charging.state)
+                    if vehicle.climatization.state.enabled and vehicle.climatization.state.value is not None:
+                        self.__send_climatization_binary_state(vehicle.climatization.state)
+                        self.__send_climatization_hvac_topics(vehicle.climatization.state)
 
     def is_healthy(self) -> bool:
         return self._healthy and super().is_healthy()
