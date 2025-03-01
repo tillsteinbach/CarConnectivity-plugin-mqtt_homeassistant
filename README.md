@@ -12,7 +12,7 @@
 
 [CarConnectivity](https://github.com/tillsteinbach/CarConnectivity) is a python API to connect to various car services. If you want to provide data to Home Assistant the [CarConnectivity MQTT Plugin](https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt) will enable the MQTT protocol. In order to improve the compatibility with Home Assistant, this plugin adds the Home Assistant Device Discovery for automatically provisioning devices in Home Assistant and adds further topics specifically for Home Assistant.
 
-<img src="https://raw.githubusercontent.com/tillsteinbach/CarConnectivity-plugin-homekit/main/screenshots/homeassistant.png" width="600">
+<img src="https://raw.githubusercontent.com/tillsteinbach/CarConnectivity-plugin-homekit/main/screenshots/homeassistant1.png" width="600">
 
 ### Install using PIP
 If you want to use the CarConnectivity Plugin for Home Assistant, the easiest way is to obtain it from [PyPI](https://pypi.org/project/carconnectivity-plugin-mqtt_homeassistant/). Just install it using:
