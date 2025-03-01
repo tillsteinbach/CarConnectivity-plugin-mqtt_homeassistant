@@ -21,6 +21,16 @@ pip3 install carconnectivity-plugin-mqtt_homeassistant
 ```
 after you installed [CarConnectivity](https://github.com/tillsteinbach/CarConnectivity) and the [CarConnectivity MQTT Plugin](https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt).
 
+### Install in your CarConnectivity Docker Container
+Add `carconnectivity-plugin-mqtt_homeassistant` to the `ADDITIONAL_INSTALLS` environment variable (multiple entries can be separated by a space).
+```
+...
+  carconnectivity-mqtt:
+    image: "tillsteinbach/carconnectivity-mqtt:latest"
+    environment:
+      - ADDITIONAL_INSTALLS=carconnectivity-plugin-mqtt_homeassistant
+...
+```
 ## Configuration
 In your carconnectivity.json configuration add a section for the mqtt_homeassistant plugin like this. A documentation of all possible config options can be found [here](https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/tree/main/doc/Config.md).
 ```
@@ -46,6 +56,12 @@ In your carconnectivity.json configuration add a section for the mqtt_homeassist
     }
 }
 ```
+Afterwards you start CarConnectivity in your preferred way, e.g. using
+```bash
+carconnectivity-mqtt carconnectivity.json
+```
+
+Once the device is created in Home Assistant all Entities will display as "Not Available". The reason is that Home Assistant does not know the states yet. In order trigger a resend of all topics, restart CarConnectivity. This will make all entities available.
 
 ## Updates
 If you want to update, the easiest way is:
