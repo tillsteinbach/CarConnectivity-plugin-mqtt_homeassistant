@@ -7,7 +7,7 @@ import logging
 import json
 
 from carconnectivity.util import config_remove_credentials
-from carconnectivity.vehicle import GenericVehicle
+from carconnectivity.vehicle import GenericVehicle, ElectricVehicle
 from carconnectivity.drive import ElectricDrive, CombustionDrive
 from carconnectivity.observable import Observable
 from carconnectivity.errors import ConfigurationError
@@ -446,6 +446,94 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 'payload_not_available': 'False',
                 'payload_available': 'True',
                 }
+        if isinstance(vehicle, ElectricVehicle):
+            if vehicle.charging.connector.connection_state.enabled and vehicle.charging.connector.connection_state.value is not None:
+                discovery_message['cmps'][f'{vin}_charging_connector_state'] = {
+                    'p': 'sensor',
+                    'device_class': 'enum',
+                    'icon': 'mdi:ev-station',
+                    'name': 'Charging Connector State',
+                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.connector.connection_state.get_absolute_path()}',
+                    'unique_id': f'{vin}_charging_connector_state'
+                }
+                if vehicle.charging.connector.connection_state.value_type is not None \
+                        and issubclass(vehicle.charging.connector.connection_state.value_type, Enum):
+                    discovery_message['cmps'][f'{vin}_charging_connector_state']['options'] = \
+                        [item.value for item in vehicle.charging.connector.connection_state.value_type]
+            if vehicle.charging.connector.lock_state.enabled and vehicle.charging.connector.lock_state.value is not None:
+                discovery_message['cmps'][f'{vin}_charging_connector_lock_state'] = {
+                    'p': 'binary_sensor',
+                    'icon': 'mdi:lock',
+                    'name': 'Charging Connector Lock State',
+                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.connector.lock_state.get_absolute_path()}',
+                            'payload_off': 'unlocked',
+                            'payload_on': 'locked',
+                    'unique_id': f'{vin}_charging_connector_lock_state'
+                }
+            if vehicle.charging.connector.external_power.enabled and vehicle.charging.connector.external_power.value is not None:
+                discovery_message['cmps'][f'{vin}_charging_connector_external_power'] = {
+                    'p': 'sensor',
+                    'device_class': 'enum',
+                    'icon': 'mdi:lightning-bolt',
+                    'name': 'Charging Connector External Power',
+                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.connector.external_power.get_absolute_path()}',
+                    'unique_id': f'{vin}_charging_connector_external_power'
+                }
+                if vehicle.charging.connector.external_power.value_type is not None and issubclass(vehicle.charging.connector.external_power.value_type, Enum):
+                    discovery_message['cmps'][f'{vin}_charging_connector_external_power']['options'] = \
+                        [item.value for item in vehicle.charging.connector.external_power.value_type]
+            if vehicle.charging.state.enabled and vehicle.charging.state.value is not None:
+                discovery_message['cmps'][f'{vin}_charging_state'] = {
+                    'p': 'sensor',
+                    'device_class': 'enum',
+                    'icon': 'mdi:battery-charging',
+                    'name': 'Charging State',
+                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.state.get_absolute_path()}',
+                    'unique_id': f'{vin}_charging_state'
+                }
+                if vehicle.charging.state.value_type is not None and issubclass(vehicle.charging.state.value_type, Enum):
+                    discovery_message['cmps'][f'{vin}_charging_state']['options'] = [item.value for item in vehicle.charging.state.value_type]
+            if vehicle.charging.type.enabled and vehicle.charging.type.value is not None:
+                discovery_message['cmps'][f'{vin}_charging_type'] = {
+                    'p': 'sensor',
+                    'device_class': 'enum',
+                    'icon': 'mdi:current-ac',
+                    'name': 'Charging Type',
+                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.type.get_absolute_path()}',
+                    'unique_id': f'{vin}_charging_type'
+                }
+                if vehicle.charging.type.value_type is not None and issubclass(vehicle.charging.type.value_type, Enum):
+                    discovery_message['cmps'][f'{vin}_charging_type']['options'] = [item.value for item in vehicle.charging.type.value_type]
+            if vehicle.charging.rate.enabled and vehicle.charging.rate.value is not None and vehicle.charging.rate.unit is not None:
+                discovery_message['cmps'][f'{vin}_charging_rate'] = {
+                    'p': 'sensor',
+                    'device_class': 'power',
+                    'icon': 'mdi:speedometer',
+                    'name': 'Charging Rate',
+                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.rate.get_absolute_path()}',
+                    'unit_of_measurement': vehicle.charging.rate.unit.value,
+                    'unique_id': f'{vin}_charging_rate'
+                }
+            if vehicle.charging.power.enabled and vehicle.charging.power.value is not None and vehicle.charging.power.unit is not None:
+                discovery_message['cmps'][f'{vin}_charging_power'] = {
+                    'p': 'sensor',
+                    'device_class': 'power',
+                    'icon': 'mdi:speedometer',
+                    'name': 'Charging Power',
+                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.power.get_absolute_path()}',
+                    'unit_of_measurement': vehicle.charging.power.unit.value,
+                    'unique_id': f'{vin}_charging_power'
+                }
+            if vehicle.charging.estimated_date_reached.enabled and vehicle.charging.estimated_date_reached.value is not None:
+                discovery_message['cmps'][f'{vin}_charging_estimated_date_reached'] = {
+                    'p': 'sensor',
+                    'device_class': 'timestamp',
+                    'icon': 'mdi:clock-end',
+                    'name': 'Charging Estimated Date Reached',
+                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.estimated_date_reached.get_absolute_path()}',
+                    'unique_id': f'{vin}_charging_estimated_date_reached'
+                }
+
         if vin not in self.homeassistant_discovery_hashes or self.homeassistant_discovery_hashes[vin] != hash(json.dumps(discovery_message)) \
                 or force:
             self.homeassistant_discovery_hashes[vin] = hash(json.dumps(discovery_message))
