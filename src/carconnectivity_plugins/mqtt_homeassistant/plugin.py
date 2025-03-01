@@ -440,12 +440,6 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                             'content_type': 'image/png',
                             'unique_id': f'{vin}_{image_id}_image'
                         }
-        for sensor in discovery_message['cmps'].values():
-            sensor['availability'] = {
-                'topic': f'{self.mqtt_plugin.mqtt_client.prefix}/plugins/{self.mqtt_plugin.mqtt_client.plugin_id}/connected',
-                'payload_not_available': 'False',
-                'payload_available': 'True',
-                }
         if isinstance(vehicle, ElectricVehicle):
             if vehicle.charging.connector.connection_state.enabled and vehicle.charging.connector.connection_state.value is not None:
                 discovery_message['cmps'][f'{vin}_charging_connector_state'] = {
@@ -533,7 +527,12 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.estimated_date_reached.get_absolute_path()}',
                     'unique_id': f'{vin}_charging_estimated_date_reached'
                 }
-
+        for sensor in discovery_message['cmps'].values():
+            sensor['availability'] = {
+                'topic': f'{self.mqtt_plugin.mqtt_client.prefix}/plugins/{self.mqtt_plugin.mqtt_client.plugin_id}/connected',
+                'payload_not_available': 'False',
+                'payload_available': 'True',
+                }
         if vin not in self.homeassistant_discovery_hashes or self.homeassistant_discovery_hashes[vin] != hash(json.dumps(discovery_message)) \
                 or force:
             self.homeassistant_discovery_hashes[vin] = hash(json.dumps(discovery_message))
