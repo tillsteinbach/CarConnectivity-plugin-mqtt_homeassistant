@@ -11,6 +11,8 @@ from carconnectivity.vehicle import GenericVehicle, ElectricVehicle
 from carconnectivity.drive import ElectricDrive, CombustionDrive
 from carconnectivity.observable import Observable
 from carconnectivity.errors import ConfigurationError
+from carconnectivity.attributes import FloatAttribute
+from carconnectivity.position import Position
 
 from carconnectivity_plugins.base.plugin import BasePlugin
 
@@ -68,7 +70,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         self.mqtt_plugin.mqtt_client.add_on_message_callback(self._on_message_callback)
         self.mqtt_plugin.mqtt_client.add_on_connect_callback(self._on_connect_callback)
 
-        flags: Observable.ObserverEvent = Observable.ObserverEvent.ENABLED | Observable.ObserverEvent.DISABLED
+        flags: Observable.ObserverEvent = Observable.ObserverEvent.ENABLED | Observable.ObserverEvent.DISABLED | Observable.ObserverEvent.VALUE_CHANGED
         self.car_connectivity.add_observer(self._on_carconnectivity_event, flags, priority=Observable.ObserverPriority.USER_MID, on_transaction_end=True)
 
         self._healthy = True
@@ -527,6 +529,16 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.estimated_date_reached.get_absolute_path()}',
                     'unique_id': f'{vin}_charging_estimated_date_reached'
                 }
+            if vehicle.position.enabled and vehicle.position.latitude.enabled and vehicle.position.latitude.value is not None \
+                    and vehicle.position.longitude.enabled and vehicle.position.longitude.value is not None:
+                discovery_message['cmps'][f'{vin}_position'] = {
+                    'p': 'device_tracker',
+                    'icon': 'mdi:map-marker',
+                    'name': 'Position',
+                    'json_attributes_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.position.get_absolute_path()}/attributes',
+                    'source_type': 'gps',
+                    'unique_id': f'{vin}_position'
+                }
         for sensor in discovery_message['cmps'].values():
             sensor['availability'] = {
                 'topic': f'{self.mqtt_plugin.mqtt_client.prefix}/plugins/{self.mqtt_plugin.mqtt_client.plugin_id}/connected',
@@ -538,6 +550,20 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             self.homeassistant_discovery_hashes[vin] = hash(json.dumps(discovery_message))
             LOG.debug("Publishing Home Assistant discovery message for vehicle %s", vin)
             self.mqtt_plugin.mqtt_client.publish(topic=discovery_topic, qos=1, retain=False, payload=json.dumps(discovery_message, indent=4))
+
+    def __send_position_extra_targets(self, position: Position) -> None:
+        if self.mqtt_plugin is None:
+            LOG.critical("MQTT plugin is None")
+        elif position.latitude.enabled and position.latitude.value is not None \
+                and position.longitude.enabled and position.longitude.value is not None:
+            topic: str = f'{self.mqtt_plugin.mqtt_client.prefix}{position.get_absolute_path()}/attributes'
+            #  pylint: disable-next=protected-access
+            self.mqtt_plugin.mqtt_client._add_topic(topic=topic, with_filter=True, subscribe=False, writeable=False)
+            payload: Dict[str, float] = {
+                'latitude': position.latitude.value,
+                'longitude': position.longitude.value
+            }
+            self.mqtt_plugin.mqtt_client.publish(topic=topic, qos=1, retain=False, payload=json.dumps(payload))
 
     def _on_carconnectivity_event(self, element, flags) -> None:
         """
@@ -551,10 +577,17 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         Returns:
             None
         """
-        del element  # Unused
         # An attribute is enabled
         if flags & Observable.ObserverEvent.ENABLED:
             self._publish_homeassistant_discovery()
+        elif flags & (Observable.ObserverEvent.ENABLED | Observable.ObserverEvent.VALUE_CHANGED):
+            if self.mqtt_plugin is None:
+                LOG.critical("MQTT plugin is None")
+            else:
+                # Generate position topic with latitude and longitude in same payload
+                if isinstance(element, FloatAttribute) and element.id == 'longitude' and element.value is not None \
+                        and isinstance(element.parent, Position):
+                    self.__send_position_extra_targets(element.parent)
 
     def _on_message_callback(self, mqttc, obj, msg) -> None:  # noqa: C901
         """
@@ -602,6 +635,12 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 if self.mqtt_plugin is not None:
                     self.mqtt_plugin.mqtt_client.subscribe('homeassistant/status', qos=1)
                     self._publish_homeassistant_discovery(force=True)
+            # send extra topics after connection
+            for vehicle in self.car_connectivity.garage.list_vehicles():
+                if vehicle.enabled:
+                    if vehicle.position.enabled and vehicle.position.latitude.enabled and vehicle.position.latitude.value is not None \
+                            and vehicle.position.longitude.enabled and vehicle.position.longitude.value is not None:
+                        self.__send_position_extra_targets(vehicle.position)
 
     def is_healthy(self) -> bool:
         return self._healthy and super().is_healthy()
