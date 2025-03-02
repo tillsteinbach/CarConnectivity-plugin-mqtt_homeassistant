@@ -16,6 +16,7 @@ from carconnectivity.position import Position
 from carconnectivity.charging import Charging
 from carconnectivity.climatization import Climatization
 from carconnectivity.units import Temperature
+from carconnectivity._version import __version__ as __carconnectivity_version__
 
 from carconnectivity_plugins.base.plugin import BasePlugin
 
@@ -46,7 +47,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
     """
     def __init__(self, plugin_id: str, car_connectivity: CarConnectivity, config: Dict) -> None:
         BasePlugin.__init__(self, plugin_id=plugin_id, car_connectivity=car_connectivity, config=config, log=LOG)
-        self._healthy = False
+
         self.mqtt_plugin: Optional[MqttPlugin] = None
         self.homeassistant_discovery: bool = True
         self.homeassistant_discovery_hashes: Dict[str, int] = {}
@@ -76,7 +77,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         flags: Observable.ObserverEvent = Observable.ObserverEvent.ENABLED | Observable.ObserverEvent.DISABLED | Observable.ObserverEvent.VALUE_CHANGED
         self.car_connectivity.add_observer(self._on_carconnectivity_event, flags, priority=Observable.ObserverPriority.USER_MID, on_transaction_end=True)
 
-        self._healthy = True
+        self.healthy._set_value(value=True)  # pylint: disable=protected-access
         LOG.debug("Starting  MQTT Home Assistant plugin done")
 
     def shutdown(self) -> None:
@@ -91,10 +92,98 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
     def get_type(self) -> str:
         return "carconnectivity-plugin-mqtt_homeassistant"
 
+    def get_name(self) -> str:
+        return "MQTT Home Assistant Plugin"
+
     def _publish_homeassistant_discovery(self, force=False) -> None:
         for vehicle in self.car_connectivity.garage.list_vehicles():
             if vehicle.enabled:
                 self._publish_homeassistant_discovery_vehicle(vehicle, force=force)
+        if self.mqtt_plugin is None:
+            raise ValueError('MQTT plugin is None')
+        car_connectivity_id: str = self.mqtt_plugin.mqtt_client.prefix.replace('/', '-')
+        discovery_topic = f'{self.active_config["homeassistant_prefix"]}/device/carconnectivity-{car_connectivity_id}/config'
+        discovery_message = {
+            'device': {
+                'ids': car_connectivity_id,
+                'name': 'CarConnectivity',
+                'mf': 'Till Steinbach and the CarConnectivity Community',
+                'sw': __carconnectivity_version__,
+            },
+            'origin': {
+                'name': 'CarConnectivity',
+                'sw': __version__,
+                'url': 'https://github.com/tillsteinbach/CarConnectivity'
+            },
+            'cmps': {}
+        }
+        for connector in self.car_connectivity.connectors.connectors.values():
+            if connector.enabled:
+                if connector.healthy.enabled and connector.healthy.value is not None:
+                    discovery_message['cmps'][f'{car_connectivity_id}_{connector.id}_healthy'] = {
+                        'p': 'binary_sensor',
+                        'name': f'{connector.get_name()} Healthy',
+                        'icon': 'mdi:check',
+                        'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{connector.healthy.get_absolute_path()}',
+                        'payload_off': 'False',
+                        'payload_on': 'True',
+                        'unique_id': f'{car_connectivity_id}_{connector.id}_healthy'
+                    }
+                for child in connector.children:
+                    if child.id == 'connection_state' and isinstance(child, EnumAttribute) and child.enabled:
+                        discovery_message['cmps'][f'{car_connectivity_id}_{connector.id}_connection_state'] = {
+                            'p': 'sensor',
+                            'device_class': 'enum',
+                            'name': f'{connector.get_name()} Connection State',
+                            'icon': 'mdi:lan-connect',
+                            'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{child.get_absolute_path()}',
+                            'payload_off': 'False',
+                            'payload_on': 'True',
+                            'unique_id': f'{car_connectivity_id}_{connector.id}_connection_state'
+                        }
+                        if child.value_type is not None and issubclass(child.value_type, Enum):
+                            discovery_message['cmps'][f'{car_connectivity_id}_{connector.id}_connection_state']['options'] = \
+                                [item.value for item in child.value_type]
+
+        for plugin in self.car_connectivity.plugins.plugins.values():
+            if plugin.enabled:
+                if plugin.healthy.enabled and plugin.healthy.value is not None:
+                    discovery_message['cmps'][f'{car_connectivity_id}_{plugin.id}_healthy'] = {
+                        'p': 'binary_sensor',
+                        'name': f'{plugin.get_name()} Healthy',
+                        'icon': 'mdi:check',
+                        'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{plugin.healthy.get_absolute_path()}',
+                        'payload_off': 'False',
+                        'payload_on': 'True',
+                        'unique_id': f'{car_connectivity_id}_{plugin.id}_healthy'
+                    }
+                for child in plugin.children:
+                    if child.id == 'connection_state' and isinstance(child, EnumAttribute) and child.enabled:
+                        discovery_message['cmps'][f'{car_connectivity_id}_{plugin.id}_connection_state'] = {
+                            'p': 'sensor',
+                            'device_class': 'enum',
+                            'name': f'{plugin.get_name()} Connected',
+                            'icon': 'mdi:lan-connect',
+                            'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{child.get_absolute_path()}',
+                            'payload_off': 'False',
+                            'payload_on': 'True',
+                            'unique_id': f'{car_connectivity_id}_{plugin.id}_connection_state'
+                        }
+                        if child.value_type is not None and issubclass(child.value_type, Enum):
+                            discovery_message['cmps'][f'{car_connectivity_id}_{plugin.id}_connection_state']['options'] = \
+                                [item.value for item in child.value_type]
+        for sensor in discovery_message['cmps'].values():
+            sensor['availability'] = [{
+                'topic': f'{self.mqtt_plugin.mqtt_client.prefix}{self.mqtt_plugin.connection_state.get_absolute_path()}',
+                'payload_not_available': 'disconnected',
+                'payload_available': 'connected',
+                }]
+        discovery_hash = hash(json.dumps(discovery_message))
+        if car_connectivity_id not in self.homeassistant_discovery_hashes \
+                or self.homeassistant_discovery_hashes[car_connectivity_id] != discovery_hash or force:
+            self.homeassistant_discovery_hashes[car_connectivity_id] = discovery_hash
+            LOG.debug("Publishing Home Assistant discovery message for CarConnectivity with Connectors and Plugins")
+            self.mqtt_plugin.mqtt_client.publish(topic=discovery_topic, qos=1, retain=False, payload=json.dumps(discovery_message, indent=4))
 
     # pylint: disable-next=too-many-branches, too-many-statements, too-many-locals
     def _publish_homeassistant_discovery_vehicle(self, vehicle: GenericVehicle, force=False) -> None:
@@ -570,7 +659,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             if vehicle.charging.rate.enabled and vehicle.charging.rate.value is not None and vehicle.charging.rate.unit is not None:
                 discovery_message['cmps'][f'{vin}_charging_rate'] = {
                     'p': 'sensor',
-                    'device_class': 'power',
+                    'device_class': 'speed',
                     'icon': 'mdi:speedometer',
                     'name': 'Charging Rate',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.rate.get_absolute_path()}',
@@ -607,14 +696,15 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'unique_id': f'{vin}_position'
                 }
         for sensor in discovery_message['cmps'].values():
-            sensor['availability'] = {
-                'topic': f'{self.mqtt_plugin.mqtt_client.prefix}/plugins/{self.mqtt_plugin.mqtt_client.plugin_id}/connected',
-                'payload_not_available': 'False',
-                'payload_available': 'True',
-                }
-        if vin not in self.homeassistant_discovery_hashes or self.homeassistant_discovery_hashes[vin] != hash(json.dumps(discovery_message)) \
+            sensor['availability'] = [{
+                'topic': f'{self.mqtt_plugin.mqtt_client.prefix}{self.mqtt_plugin.connection_state.get_absolute_path()}',
+                'payload_not_available': 'disconnected',
+                'payload_available': 'connected',
+                }]
+        discovery_hash = hash(json.dumps(discovery_message))
+        if vin not in self.homeassistant_discovery_hashes or self.homeassistant_discovery_hashes[vin] != discovery_hash \
                 or force:
-            self.homeassistant_discovery_hashes[vin] = hash(json.dumps(discovery_message))
+            self.homeassistant_discovery_hashes[vin] = discovery_hash
             LOG.debug("Publishing Home Assistant discovery message for vehicle %s", vin)
             self.mqtt_plugin.mqtt_client.publish(topic=discovery_topic, qos=1, retain=False, payload=json.dumps(discovery_message, indent=4))
 
@@ -775,6 +865,3 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     if vehicle.climatization.state.enabled and vehicle.climatization.state.value is not None:
                         self.__send_climatization_binary_state(vehicle.climatization.state)
                         self.__send_climatization_hvac_topics(vehicle.climatization.state)
-
-    def is_healthy(self) -> bool:
-        return self._healthy and super().is_healthy()
