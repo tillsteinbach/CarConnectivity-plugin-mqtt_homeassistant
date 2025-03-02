@@ -95,7 +95,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
     def get_name(self) -> str:
         return "MQTT Home Assistant Plugin"
 
-    def _publish_homeassistant_discovery(self, force=False) -> None:
+    def _publish_homeassistant_discovery(self, force=False) -> None:  # pylint: disable=too-many-branches
         for vehicle in self.car_connectivity.garage.list_vehicles():
             if vehicle.enabled:
                 self._publish_homeassistant_discovery_vehicle(vehicle, force=force)
