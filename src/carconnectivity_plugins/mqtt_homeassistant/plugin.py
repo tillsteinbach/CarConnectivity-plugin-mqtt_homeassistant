@@ -356,8 +356,8 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         'name': 'Lock State',
                         'icon': 'mdi:car-door-lock',
                         'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.doors.lock_state.get_absolute_path()}',
-                        'payload_off': 'unlocked',
-                        'payload_on': 'locked',
+                        'payload_on': 'unlocked',
+                        'payload_off': 'locked',
                         'unique_id': f'{vin}_lock_state'
                     }
             for door_id, door in vehicle.doors.doors.items():
@@ -380,8 +380,8 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                             'name': f'Lock State ({door_id})',
                             'icon': 'mdi:car-door-lock',
                             'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{door.lock_state.get_absolute_path()}',
-                            'payload_off': 'unlocked',
-                            'payload_on': 'locked',
+                            'payload_on': 'unlocked',
+                            'payload_off': 'locked',
                             'unique_id': f'{vin}_{door_id}_door_lock_state'
                         }
         if vehicle.windows is not None and vehicle.windows.enabled:
@@ -627,8 +627,8 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'icon': 'mdi:lock',
                     'name': 'Charging Connector Lock State',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.connector.lock_state.get_absolute_path()}',
-                            'payload_off': 'unlocked',
-                            'payload_on': 'locked',
+                    'payload_on': 'unlocked',
+                    'payload_off': 'locked',
                     'unique_id': f'{vin}_charging_connector_lock_state'
                 }
             if vehicle.charging.connector.external_power.enabled and vehicle.charging.connector.external_power.value is not None:
