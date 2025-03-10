@@ -685,16 +685,16 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.estimated_date_reached.get_absolute_path()}',
                     'unique_id': f'{vin}_charging_estimated_date_reached'
                 }
-            if vehicle.position.enabled and vehicle.position.latitude.enabled and vehicle.position.latitude.value is not None \
-                    and vehicle.position.longitude.enabled and vehicle.position.longitude.value is not None:
-                discovery_message['cmps'][f'{vin}_position'] = {
-                    'p': 'device_tracker',
-                    'icon': 'mdi:map-marker',
-                    'name': 'Position',
-                    'json_attributes_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.position.get_absolute_path()}/attributes',
-                    'source_type': 'gps',
-                    'unique_id': f'{vin}_position'
-                }
+        if vehicle.position.enabled and vehicle.position.latitude.enabled and vehicle.position.latitude.value is not None \
+                and vehicle.position.longitude.enabled and vehicle.position.longitude.value is not None:
+            discovery_message['cmps'][f'{vin}_position'] = {
+                'p': 'device_tracker',
+                'icon': 'mdi:map-marker',
+                'name': 'Position',
+                'json_attributes_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.position.get_absolute_path()}/attributes',
+                'source_type': 'gps',
+                'unique_id': f'{vin}_position'
+            }
         for sensor in discovery_message['cmps'].values():
             sensor['availability'] = [{
                 'topic': f'{self.mqtt_plugin.mqtt_client.prefix}{self.mqtt_plugin.connection_state.get_absolute_path()}',
