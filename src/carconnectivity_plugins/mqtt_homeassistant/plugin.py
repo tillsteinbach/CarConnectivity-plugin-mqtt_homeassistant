@@ -122,6 +122,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 if connector.healthy.enabled and connector.healthy.value is not None:
                     discovery_message['cmps'][f'{car_connectivity_id}_{connector.id}_healthy'] = {
                         'p': 'binary_sensor',
+                        'device_class': 'running',
                         'name': f'{connector.get_name()} Healthy',
                         'icon': 'mdi:check',
                         'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{connector.healthy.get_absolute_path()}',
@@ -150,6 +151,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 if plugin.healthy.enabled and plugin.healthy.value is not None:
                     discovery_message['cmps'][f'{car_connectivity_id}_{plugin.id}_healthy'] = {
                         'p': 'binary_sensor',
+                        'device_class': 'running',
                         'name': f'{plugin.get_name()} Healthy',
                         'icon': 'mdi:check',
                         'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{plugin.healthy.get_absolute_path()}',
@@ -324,6 +326,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             if vehicle.doors.open_state.enabled and vehicle.doors.open_state.value is not None:
                 discovery_message['cmps'][f'{vin}_open_state'] = {
                     'p': 'binary_sensor',
+                    'device_class': 'door',
                     'name': 'Door Open State',
                     'icon': 'mdi:car-door',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.doors.open_state.get_absolute_path()}',
@@ -349,6 +352,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 else:
                     discovery_message['cmps'][f'{vin}_lock_state'] = {
                         'p': 'binary_sensor',
+                        'device_class': 'lock',
                         'name': 'Lock State',
                         'icon': 'mdi:car-door-lock',
                         'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.doors.lock_state.get_absolute_path()}',
@@ -361,6 +365,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     if door.open_state.enabled and door.open_state.value is not None:
                         discovery_message['cmps'][f'{vin}_{door_id}_door_open_state'] = {
                             'p': 'binary_sensor',
+                            'device_class': 'door',
                             'name': f'Door Open State ({door_id})',
                             'icon': 'mdi:car-door',
                             'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{door.open_state.get_absolute_path()}',
@@ -371,6 +376,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     if door.lock_state.enabled and door.lock_state.value is not None:
                         discovery_message['cmps'][f'{vin}_{door_id}_door_lock_state'] = {
                             'p': 'binary_sensor',
+                            'device_class': 'lock',
                             'name': f'Lock State ({door_id})',
                             'icon': 'mdi:car-door-lock',
                             'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{door.lock_state.get_absolute_path()}',
@@ -382,6 +388,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             if vehicle.windows.open_state.enabled and vehicle.windows.open_state.value is not None:
                 discovery_message['cmps'][f'{vin}_window_open_state'] = {
                     'p': 'binary_sensor',
+                    'device_class': 'window',
                     'name': 'Window Open State',
                     'icon': 'mdi:window-open',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.windows.open_state.get_absolute_path()}',
@@ -394,6 +401,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     if window.open_state.enabled and window.open_state.value is not None:
                         discovery_message['cmps'][f'{vin}_{window_id}_window_open_state'] = {
                             'p': 'binary_sensor',
+                            'device_class': 'window',
                             'name': f'Window Open State ({window_id})',
                             'icon': 'mdi:window-open',
                             'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{window.open_state.get_absolute_path()}',
@@ -404,7 +412,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         if vehicle.lights is not None and vehicle.lights.enabled:
             if vehicle.lights.light_state.enabled and vehicle.lights.light_state.value is not None:
                 discovery_message['cmps'][f'{vin}_light_state'] = {
-                    'p': 'sensor',
+                    'p': 'binary_sensor',
                     'name': 'Light State',
                     'icon': 'mdi:car-light-dimmed',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.lights.light_state.get_absolute_path()}',
@@ -416,7 +424,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 if light.enabled:
                     if light.light_state.enabled and light.light_state.value is not None:
                         discovery_message['cmps'][f'{vin}_{light_id}_state'] = {
-                            'p': 'sensor',
+                            'p': 'binary_sensor',
                             'name': f'Light State ({light_id})',
                             'icon': 'mdi:car-light-dimmed',
                             'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{light.light_state.get_absolute_path()}',
@@ -615,6 +623,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             if vehicle.charging.connector.lock_state.enabled and vehicle.charging.connector.lock_state.value is not None:
                 discovery_message['cmps'][f'{vin}_charging_connector_lock_state'] = {
                     'p': 'binary_sensor',
+                    'device_class': 'lock',
                     'icon': 'mdi:lock',
                     'name': 'Charging Connector Lock State',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.connector.lock_state.get_absolute_path()}',
