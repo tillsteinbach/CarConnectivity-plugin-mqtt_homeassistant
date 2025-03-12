@@ -8,7 +8,7 @@ import json
 
 from carconnectivity.util import config_remove_credentials
 from carconnectivity.vehicle import GenericVehicle, ElectricVehicle
-from carconnectivity.drive import ElectricDrive, CombustionDrive
+from carconnectivity.drive import ElectricDrive, CombustionDrive, DieselDrive
 from carconnectivity.observable import Observable
 from carconnectivity.errors import ConfigurationError
 from carconnectivity.attributes import FloatAttribute, EnumAttribute, GenericAttribute
@@ -300,6 +300,25 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                 'unit_of_measurement': drive.level.unit.value,
                                 'unique_id': f'{vin}_{drive_id}_level'
                             }
+                        if isinstance(drive, DieselDrive):
+                            if drive.adblue_level.enabled and drive.adblue_level.value is not None and drive.adblue_level.unit is not None:
+                                discovery_message['cmps'][f'{vin}_{drive_id}_adbluelevel'] = {
+                                    'p': 'sensor',
+                                    'name': f'AdBlue Tank ({drive_id})',
+                                    'icon': 'mdi:gas-station',
+                                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.adblue_level.get_absolute_path()}',
+                                    'unit_of_measurement': drive.adblue_level.unit.value,
+                                    'unique_id': f'{vin}_{drive_id}_adbluelevel'
+                                }
+                            if drive.adblue_range.enabled and drive.adblue_range.value is not None and drive.adblue_range.unit is not None:
+                                discovery_message['cmps'][f'{vin}_{drive_id}_adbluerange'] = {
+                                    'p': 'sensor',
+                                    'device_class': 'distance',
+                                    'name': f'AdBlue Range ({drive_id})',
+                                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.adblue_range.get_absolute_path()}',
+                                    'unit_of_measurement': drive.adblue_range.unit.value,
+                                    'unique_id': f'{vin}_{drive_id}_adbluerange'
+                                }
                     elif isinstance(drive, ElectricDrive):
                         if drive.level.enabled and drive.level.value is not None and drive.level.unit is not None:
                             discovery_message['cmps'][f'{vin}_{drive_id}_level'] = {
