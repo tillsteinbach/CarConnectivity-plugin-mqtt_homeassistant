@@ -14,6 +14,7 @@ from carconnectivity.errors import ConfigurationError
 from carconnectivity.attributes import FloatAttribute, EnumAttribute, GenericAttribute
 from carconnectivity.position import Position
 from carconnectivity.charging import Charging
+from carconnectivity.doors import Doors
 from carconnectivity.climatization import Climatization
 from carconnectivity.units import Temperature
 from carconnectivity._version import __version__ as __carconnectivity_version__
@@ -381,7 +382,8 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     }
             for door_id, door in vehicle.doors.doors.items():
                 if door.enabled:
-                    if door.open_state.enabled and door.open_state.value is not None:
+                    if door.open_state.enabled and door.open_state.value is not None \
+                            and door.open_state.value not in [Doors.OpenState.UNKNOWN, Doors.OpenState.INVALID, Doors.OpenState.UNSUPPORTED]:
                         discovery_message['cmps'][f'{vin}_{door_id}_door_open_state'] = {
                             'p': 'binary_sensor',
                             'device_class': 'door',
@@ -392,7 +394,8 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                             'payload_on': 'open',
                             'unique_id': f'{vin}_{door_id}_door_open_state'
                         }
-                    if door.lock_state.enabled and door.lock_state.value is not None:
+                    if door.lock_state.enabled and door.lock_state.value is not None \
+                            and door.lock_state.value not in [Doors.LockState.UNKNOWN, Doors.LockState.INVALID]:
                         discovery_message['cmps'][f'{vin}_{door_id}_door_lock_state'] = {
                             'p': 'binary_sensor',
                             'device_class': 'lock',
