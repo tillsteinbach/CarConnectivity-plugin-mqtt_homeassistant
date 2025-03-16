@@ -454,6 +454,47 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                             'payload_on': 'on',
                             'unique_id': f'{vin}_{light_id}_state'
                         }
+        if vehicle.window_heatings is not None and vehicle.window_heatings.enabled:
+            if vehicle.window_heatings.commands.enabled and 'start-stop' in vehicle.window_heatings.commands.commands \
+                    and vehicle.window_heatings.heating_state.enabled and vehicle.window_heatings.heating_state.value is not None:
+                discovery_message['cmps'][f'{vin}_window_heating_start_stop'] = {
+                    'p': 'switch',
+                    'name': 'Start/Stop Window Heating',
+                    'icon': 'mdi:car-defrost-front',
+                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.window_heatings.heating_state.get_absolute_path()}',
+                    'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.window_heatings.commands.commands["start-stop"].get_absolute_path()}'
+                    + '_writetopic',
+                    'payload_on': 'start',
+                    'payload_off': 'stop',
+                    'state_on': 'on',
+                    'state_off': 'off',
+                    'unique_id': f'{vin}_window_heating_start_stop'
+                }
+            if vehicle.window_heatings.heating_state.enabled and vehicle.window_heatings.heating_state.value is not None:
+                discovery_message['cmps'][f'{vin}_window_heating_state'] = {
+                    'p': 'binary_sensor',
+                    'name': 'Window Heating State',
+                    'icon': 'mdi:car-defrost-front',
+                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.window_heatings.heating_state.get_absolute_path()}',
+                    'payload_off': 'off',
+                    'payload_on': 'on',
+                    'unique_id': f'{vin}_window_heating_state'
+                }
+            for window_id, window in vehicle.window_heatings.windows.items():
+                if window.enabled:
+                    if window.heating_state.enabled and window.heating_state.value is not None:
+                        discovery_message['cmps'][f'{vin}_{window_id}_window_heating_state'] = {
+                            'p': 'binary_sensor',
+                            'name': f'Window Heating State ({window_id})',
+                            'icon': 'mdi:car-defrost-front',
+                            'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{window.heating_state.get_absolute_path()}',
+                            'payload_off': 'off',
+                            'payload_on': 'on',
+                            'unique_id': f'{vin}_{window_id}_window_heating_state'
+                        }
+                    if 'rear' in window_id:
+                        discovery_message['cmps'][f'{vin}_{window_id}_window_heating_state']['icon'] = 'mdi:car-defrost-rear'
+
         if vehicle.position.enabled:
             # pylint: disable-next=too-many-boolean-expressions
             if vehicle.position.latitude.enabled and vehicle.position.latitude.value is not None \
@@ -615,7 +656,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         }
         if isinstance(vehicle, ElectricVehicle):
             if vehicle.charging.connector.connection_state.enabled and vehicle.charging.connector.connection_state.value is not None:
-                if vehicle.charging.commands.enabled and 'start-stop' in vehicle.climatization.commands.commands \
+                if vehicle.charging.commands.enabled and 'start-stop' in vehicle.charging.commands.commands \
                         and vehicle.charging.state.enabled and vehicle.charging.state.value is not None:
                     discovery_message['cmps'][f'{vin}_charging_start_stop'] = {
                         'p': 'switch',
