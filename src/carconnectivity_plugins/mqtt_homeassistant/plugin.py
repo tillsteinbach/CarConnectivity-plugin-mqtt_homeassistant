@@ -757,6 +757,48 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.estimated_date_reached.get_absolute_path()}',
                     'unique_id': f'{vin}_charging_estimated_date_reached'
                 }
+            if vehicle.charging.settings is not None:
+                if vehicle.charging.settings.target_level.enabled and vehicle.charging.settings.target_level.value is not None:
+                    discovery_message['cmps'][f'{vin}_charging_target_level'] = {
+                        'p': 'number',
+                        'device_class': 'battery',
+                        'icon': 'mdi:battery',
+                        'name': 'Charging Target Level',
+                        'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.target_level.get_absolute_path()}_writetopic',
+                        'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.target_level.get_absolute_path()}',
+                        'min': vehicle.charging.settings.target_level.minimum,
+                        'max': vehicle.charging.settings.target_level.maximum,
+                        'step': vehicle.charging.settings.target_level.precision,
+                        'unit_of_measurement': vehicle.charging.settings.target_level.unit.value,
+                        'unique_id': f'{vin}_charging_target_level'
+                    }
+                if vehicle.charging.settings.maximum_current.enabled and vehicle.charging.settings.maximum_current.value is not None:
+                    discovery_message['cmps'][f'{vin}_charging_maximum_current'] = {
+                        'p': 'number',
+                        'device_class': 'power',
+                        'icon': 'mdi:speedometer',
+                        'name': 'Charging Maximum Current',
+                        'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.maximum_current.get_absolute_path()}_writetopic',
+                        'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.maximum_current.get_absolute_path()}',
+                        'min': vehicle.charging.settings.maximum_current.minimum,
+                        'max': vehicle.charging.settings.maximum_current.maximum,
+                        'step': vehicle.charging.settings.maximum_current.precision,
+                        'unit_of_measurement': vehicle.charging.settings.maximum_current.unit.value,
+                        'unique_id': f'{vin}_charging_maximum_current'
+                    }
+                if vehicle.charging.settings.auto_unlock.enabled and vehicle.charging.settings.auto_unlock.value is not None:
+                    discovery_message['cmps'][f'{vin}_charging_auto_unlock'] = {
+                        'p': 'switch',
+                        'name': 'Auto unlock charging connector',
+                        'icon': 'mdi:lock',
+                        'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.auto_unlock.get_absolute_path()}',
+                        'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.auto_unlock.get_absolute_path()}_writetopic',
+                        'payload_on': True,
+                        'payload_off': False,
+                        'state_on': True,
+                        'state_off': False,
+                        'unique_id': f'{vin}_charging_auto_unlock'
+                    }
         if vehicle.position.enabled and vehicle.position.latitude.enabled and vehicle.position.latitude.value is not None \
                 and vehicle.position.longitude.enabled and vehicle.position.longitude.value is not None:
             discovery_message['cmps'][f'{vin}_position'] = {
