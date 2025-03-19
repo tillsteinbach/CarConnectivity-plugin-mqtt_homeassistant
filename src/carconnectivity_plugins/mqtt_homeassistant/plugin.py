@@ -777,7 +777,6 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 if vehicle.charging.settings.target_level.enabled and vehicle.charging.settings.target_level.value is not None:
                     discovery_message['cmps'][f'{vin}_charging_target_level'] = {
                         'p': 'sensor',
-                        'device_class': 'battery',
                         'icon': 'mdi:battery',
                         'name': 'Charging Target Level',
                         'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.target_level.get_absolute_path()}',
