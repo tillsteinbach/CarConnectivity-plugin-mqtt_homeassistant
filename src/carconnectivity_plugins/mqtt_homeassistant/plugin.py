@@ -867,7 +867,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 'latitude': position.latitude.value,
                 'longitude': position.longitude.value
             }
-            self.mqtt_plugin.mqtt_client.publish(topic=topic, qos=1, retain=False, payload=json.dumps(payload))
+            self.mqtt_plugin.mqtt_client.publish(topic=topic, qos=1, retain=True, payload=json.dumps(payload))
 
     def __send_charging_binary_state(self, charging_state: EnumAttribute[Charging.ChargingState]) -> None:
         if self.mqtt_plugin is None:
@@ -881,7 +881,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 payload = 'on'
             elif charging_state.value in [Charging.ChargingState.OFF, Charging.ChargingState.READY_FOR_CHARGING, Charging.ChargingState.ERROR]:
                 payload = 'off'
-            self.mqtt_plugin.mqtt_client.publish(topic=topic, qos=1, retain=False, payload=payload)
+            self.mqtt_plugin.mqtt_client.publish(topic=topic, qos=1, retain=True, payload=payload)
 
     def __send_climatization_binary_state(self, climatization_state: EnumAttribute[Climatization.ClimatizationState]) -> None:
         if self.mqtt_plugin is None:
@@ -897,7 +897,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 payload = 'on'
             elif climatization_state.value in [Climatization.ClimatizationState.OFF]:
                 payload = 'off'
-            self.mqtt_plugin.mqtt_client.publish(topic=topic, qos=1, retain=False, payload=payload)
+            self.mqtt_plugin.mqtt_client.publish(topic=topic, qos=1, retain=True, payload=payload)
 
     def __send_climatization_hvac_topics(self, climatization_state: EnumAttribute[Climatization.ClimatizationState]) -> None:
         if self.mqtt_plugin is None:
@@ -923,8 +923,8 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             elif climatization_state.value in [Climatization.ClimatizationState.OFF]:
                 action_payload = 'off'
                 mode_payload = 'off'
-            self.mqtt_plugin.mqtt_client.publish(topic=action_topic, qos=1, retain=False, payload=action_payload)
-            self.mqtt_plugin.mqtt_client.publish(topic=mode_topic, qos=1, retain=False, payload=mode_payload)
+            self.mqtt_plugin.mqtt_client.publish(topic=action_topic, qos=1, retain=True, payload=action_payload)
+            self.mqtt_plugin.mqtt_client.publish(topic=mode_topic, qos=1, retain=True, payload=mode_payload)
 
     def _on_carconnectivity_event(self, element, flags) -> None:
         """
