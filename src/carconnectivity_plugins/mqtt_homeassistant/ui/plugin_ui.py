@@ -18,8 +18,8 @@ class PluginUI(BasePluginUI):
     A user interface class for the MQTT Home Assistant plugin in the Car Connectivity application.
     """
     def __init__(self, plugin: BasePlugin):
-        blueprint: Optional[flask.Blueprint] = flask.Blueprint(name='mqtt_homeassistant', import_name='carconnectivity-plugin-mqtt_homeassistant',
-                                                               url_prefix='/mqtt_homeassistant', template_folder=os.path.dirname(__file__) + '/templates')
+        blueprint: Optional[flask.Blueprint] = flask.Blueprint(name=plugin.id, import_name='carconnectivity-plugin-mqtt_homeassistant',
+                                                               url_prefix=f'/{plugin.id}', template_folder=os.path.dirname(__file__) + '/templates')
         super().__init__(plugin, blueprint=blueprint)
 
     # pylint: disable=useless-parent-delegation
