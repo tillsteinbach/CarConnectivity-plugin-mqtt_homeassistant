@@ -238,7 +238,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 'payload_press': 'wake',
                 'unique_id': f'{vin}_wake'
             }
-        if vehicle.odometer.enabled and vehicle.odometer.value is not None and vehicle.odometer.unit is not None:
+        if vehicle.odometer.enabled and vehicle.odometer.value is not None:
             discovery_message['cmps'][f'{vin}_odometer'] = {
                 'p': 'sensor',
                 'device_class': 'distance',
@@ -248,7 +248,9 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 'unique_id': f'{vin}_odometer',
             }
             if vehicle.odometer.unit is not None:
-                discovery_message['cmps'][f'{vin}_odometer']['unit_of_measurement'] = vehicle.odometer.unit.value
+                _, unit = vehicle.odometer.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                if unit is not None:
+                    discovery_message['cmps'][f'{vin}_odometer']['unit_of_measurement'] = unit.value
         if vehicle.state.enabled and vehicle.state.value is not None:
             discovery_message['cmps'][f'{vin}_state'] = {
                 'p': 'sensor',
@@ -272,7 +274,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             if vehicle.connection_state.value_type is not None and issubclass(vehicle.connection_state.value_type, Enum):
                 discovery_message['cmps'][f'{vin}_connection_state']['options'] = [item.value for item in vehicle.connection_state.value_type]
         if vehicle.drives is not None and vehicle.drives.enabled:  # pylint: disable=too-many-nested-blocks
-            if vehicle.drives.total_range.enabled and vehicle.drives.total_range.value is not None and vehicle.drives.total_range.unit is not None:
+            if vehicle.drives.total_range.enabled and vehicle.drives.total_range.value is not None:
                 discovery_message['cmps'][f'{vin}_total_range'] = {
                     'p': 'sensor',
                     'device_class': 'distance',
@@ -281,10 +283,12 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'unique_id': f'{vin}_total_range'
                 }
                 if vehicle.drives.total_range.unit is not None:
-                    discovery_message['cmps'][f'{vin}_total_range']['unit_of_measurement'] = vehicle.drives.total_range.unit.value
+                    _, unit = vehicle.drives.total_range.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                    if unit is not None:
+                        discovery_message['cmps'][f'{vin}_total_range']['unit_of_measurement'] = unit.value
             for drive_id, drive in vehicle.drives.drives.items():
                 if drive.enabled:
-                    if drive.range.enabled and drive.range.value is not None and drive.range.unit is not None:
+                    if drive.range.enabled and drive.range.value is not None:
                         discovery_message['cmps'][f'{vin}_{drive_id}_range'] = {
                             'p': 'sensor',
                             'device_class': 'distance',
@@ -293,9 +297,11 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                             'unique_id': f'{vin}_{drive_id}_range'
                         }
                         if drive.range.unit is not None:
-                            discovery_message['cmps'][f'{vin}_{drive_id}_range']['unit_of_measurement'] = drive.range.unit.value
+                            _, unit = drive.range.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                            if unit is not None:
+                                discovery_message['cmps'][f'{vin}_{drive_id}_range']['unit_of_measurement'] = unit.value
                     if isinstance(drive, CombustionDrive):
-                        if drive.level.enabled and drive.level.value is not None and drive.level.unit is not None:
+                        if drive.level.enabled and drive.level.value is not None:
                             discovery_message['cmps'][f'{vin}_{drive_id}_level'] = {
                                 'p': 'sensor',
                                 'name': f'Tank ({drive_id})',
@@ -304,9 +310,11 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                 'unique_id': f'{vin}_{drive_id}_level'
                             }
                             if drive.level.unit is not None:
-                                discovery_message['cmps'][f'{vin}_{drive_id}_level']['unit_of_measurement'] = drive.level.unit.value
+                                _, unit = drive.level.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                if unit is not None:
+                                    discovery_message['cmps'][f'{vin}_{drive_id}_level']['unit_of_measurement'] = unit.value
                         if isinstance(drive, DieselDrive):
-                            if drive.adblue_level.enabled and drive.adblue_level.value is not None and drive.adblue_level.unit is not None:
+                            if drive.adblue_level.enabled and drive.adblue_level.value is not None:
                                 discovery_message['cmps'][f'{vin}_{drive_id}_adbluelevel'] = {
                                     'p': 'sensor',
                                     'name': f'AdBlue Tank ({drive_id})',
@@ -315,8 +323,10 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                     'unique_id': f'{vin}_{drive_id}_adbluelevel'
                                 }
                                 if drive.adblue_level.unit is not None:
-                                    discovery_message['cmps'][f'{vin}_{drive_id}_adbluelevel']['unit_of_measurement'] = drive.adblue_level.unit.value
-                            if drive.adblue_range.enabled and drive.adblue_range.value is not None and drive.adblue_range.unit is not None:
+                                    _, unit = drive.adblue_level.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                    if unit is not None:
+                                        discovery_message['cmps'][f'{vin}_{drive_id}_adbluelevel']['unit_of_measurement'] = unit.value
+                            if drive.adblue_range.enabled and drive.adblue_range.value is not None:
                                 discovery_message['cmps'][f'{vin}_{drive_id}_adbluerange'] = {
                                     'p': 'sensor',
                                     'device_class': 'distance',
@@ -325,9 +335,11 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                     'unique_id': f'{vin}_{drive_id}_adbluerange'
                                 }
                                 if drive.adblue_range.unit is not None:
-                                    discovery_message['cmps'][f'{vin}_{drive_id}_adbluerange']['unit_of_measurement'] = drive.adblue_range.unit.value
+                                    _, unit = drive.adblue_range.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                    if unit is not None:
+                                        discovery_message['cmps'][f'{vin}_{drive_id}_adbluerange']['unit_of_measurement'] = unit.value
                     elif isinstance(drive, ElectricDrive):
-                        if drive.level.enabled and drive.level.value is not None and drive.level.unit is not None:
+                        if drive.level.enabled and drive.level.value is not None:
                             discovery_message['cmps'][f'{vin}_{drive_id}_level'] = {
                                 'p': 'sensor',
                                 'device_class': 'battery',
@@ -337,9 +349,11 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                 'unique_id': f'{vin}_{drive_id}_level'
                             }
                             if drive.level.unit is not None:
-                                discovery_message['cmps'][f'{vin}_{drive_id}_level']['unit_of_measurement'] = drive.level.unit.value
+                                _, unit = drive.level.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                if unit is not None:
+                                    discovery_message['cmps'][f'{vin}_{drive_id}_level']['unit_of_measurement'] = unit.value
                         if drive.battery is not None and drive.battery.enabled:
-                            if drive.battery.temperature.enabled and drive.battery.temperature.value is not None and drive.battery.temperature.unit is not None:
+                            if drive.battery.temperature.enabled and drive.battery.temperature.value is not None:
                                 discovery_message['cmps'][f'{vin}_{drive_id}_battery_temperature'] = {
                                     'p': 'sensor',
                                     'device_class': 'temperature',
@@ -349,8 +363,9 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                     'unique_id': f'{vin}_{drive_id}_battery_temperature'
                                 }
                                 if drive.battery.temperature.unit is not None:
-                                    discovery_message['cmps'][f'{vin}_{drive_id}_battery_temperature']['unit_of_measurement'] = \
-                                        drive.battery.temperature.unit.value
+                                    _, unit = drive.battery.temperature.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                    if unit is not None:
+                                        discovery_message['cmps'][f'{vin}_{drive_id}_battery_temperature']['unit_of_measurement'] = unit.value
         if vehicle.doors is not None and vehicle.doors.enabled:
             if vehicle.doors.open_state.enabled and vehicle.doors.open_state.value is not None:
                 discovery_message['cmps'][f'{vin}_open_state'] = {
@@ -507,8 +522,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         if vehicle.position.enabled:
             # pylint: disable-next=too-many-boolean-expressions
             if vehicle.position.latitude.enabled and vehicle.position.latitude.value is not None \
-                    and vehicle.position.longitude.enabled and vehicle.position.longitude.value is not None \
-                    and vehicle.position.latitude.unit is not None and vehicle.position.longitude.unit is not None:
+                    and vehicle.position.longitude.enabled and vehicle.position.longitude.value is not None:
                 discovery_message['cmps'][f'{vin}_latitude'] = {
                     'p': 'sensor',
                     'name': 'Position Latitude',
@@ -517,7 +531,9 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'unique_id': f'{vin}_latitude'
                 }
                 if vehicle.position.latitude.unit is not None:
-                    discovery_message['cmps'][f'{vin}_latitude']['unit_of_measurement'] = vehicle.position.latitude.unit.value
+                    _, unit = vehicle.position.latitude.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                    if unit is not None:
+                        discovery_message['cmps'][f'{vin}_latitude']['unit_of_measurement'] = unit.value
                 discovery_message['cmps'][f'{vin}_longitude'] = {
                     'p': 'sensor',
                     'name': 'Position Longitude',
@@ -526,7 +542,9 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'unique_id': f'{vin}_longitude'
                 }
                 if vehicle.position.longitude.unit is not None:
-                    discovery_message['cmps'][f'{vin}_longitude']['unit_of_measurement'] = vehicle.position.longitude.unit.value
+                    _, unit = vehicle.position.longitude.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                    if unit is not None:
+                        discovery_message['cmps'][f'{vin}_longitude']['unit_of_measurement'] = unit.value
             if vehicle.position.position_type.enabled and vehicle.position.position_type.value is not None:
                 discovery_message['cmps'][f'{vin}_position_type'] = {
                     'p': 'sensor',
@@ -549,7 +567,8 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'unique_id': f'{vin}_climatization_state'
                 }
                 if vehicle.climatization.state.value_type is not None and issubclass(vehicle.climatization.state.value_type, Enum):
-                    discovery_message['cmps'][f'{vin}_climatization_state']['options'] = [item.value for item in vehicle.climatization.state.value_type]
+                    discovery_message['cmps'][f'{vin}_climatization_state']['options'] = \
+                        [item.value for item in vehicle.climatization.state.value_type]
             if vehicle.climatization.commands.enabled and 'start-stop' in vehicle.climatization.commands.commands:
                 def __mode_to_command_hook(attribute: GenericAttribute, value: Any) -> Any:
                     del attribute
@@ -590,10 +609,12 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     discovery_message['cmps'][f'{vin}_climatization_start_stop']['temperature_command_topic'] = \
                         f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.settings.target_temperature.get_absolute_path()}_writetopic'
                 if vehicle.climatization.settings.target_temperature.unit is not None:
-                    if vehicle.climatization.settings.target_temperature.unit.value == Temperature.C:
-                        discovery_message['cmps'][f'{vin}_climatization_start_stop']['temperature_unit'] = 'C'
-                    elif vehicle.climatization.settings.target_temperature.unit.value == Temperature.F:
-                        discovery_message['cmps'][f'{vin}_climatization_start_stop']['temperature_unit'] = 'F'
+                    _, unit = vehicle.climatization.settings.target_temperature.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                    if unit is not None:
+                        if unit == Temperature.C:
+                            discovery_message['cmps'][f'{vin}_climatization_start_stop']['temperature_unit'] = 'C'
+                        elif unit == Temperature.F:
+                            discovery_message['cmps'][f'{vin}_climatization_start_stop']['temperature_unit'] = 'F'
             if vehicle.climatization.estimated_date_reached.enabled and vehicle.climatization.estimated_date_reached.value is not None:
                 discovery_message['cmps'][f'{vin}_climatization_estimated_date_reached'] = {
                     'p': 'sensor',
@@ -603,7 +624,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.estimated_date_reached.get_absolute_path()}',
                     'unique_id': f'{vin}_climatization_estimated_date_reached'
                 }
-        if vehicle.outside_temperature.enabled and vehicle.outside_temperature.value is not None and vehicle.outside_temperature.unit is not None:
+        if vehicle.outside_temperature.enabled and vehicle.outside_temperature.value is not None:
             discovery_message['cmps'][f'{vin}_outside_temperature'] = {
                 'p': 'sensor',
                 'device_class': 'temperature',
@@ -613,7 +634,9 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 'unique_id': f'{vin}_outside_temperature'
             }
             if vehicle.outside_temperature.unit is not None:
-                discovery_message['cmps'][f'{vin}_outside_temperature']['unit_of_measurement'] = vehicle.outside_temperature.unit.value
+                _, unit = vehicle.outside_temperature.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                if unit is not None:
+                    discovery_message['cmps'][f'{vin}_outside_temperature']['unit_of_measurement'] = unit.value
         if vehicle.maintenance.enabled:
             if vehicle.maintenance.inspection_due_at.enabled and vehicle.maintenance.inspection_due_at.value is not None:
                 discovery_message['cmps'][f'{vin}_inspection_due_at'] = {
@@ -624,8 +647,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.maintenance.inspection_due_at.get_absolute_path()}',
                     'unique_id': f'{vin}_inspection_due_at'
                 }
-            if vehicle.maintenance.inspection_due_after.enabled and vehicle.maintenance.inspection_due_after.value is not None \
-                    and vehicle.maintenance.inspection_due_after.unit is not None:
+            if vehicle.maintenance.inspection_due_after.enabled and vehicle.maintenance.inspection_due_after.value is not None:
                 discovery_message['cmps'][f'{vin}_inspection_due_after'] = {
                     'p': 'sensor',
                     'device_class': 'distance',
@@ -635,7 +657,9 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'unique_id': f'{vin}_inspection_due_after'
                 }
                 if vehicle.maintenance.inspection_due_after.unit is not None:
-                    discovery_message['cmps'][f'{vin}_inspection_due_after']['unit_of_measurement'] = vehicle.maintenance.inspection_due_after.unit.value
+                    _, unit = vehicle.maintenance.inspection_due_after.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                    if unit is not None:
+                        discovery_message['cmps'][f'{vin}_inspection_due_after']['unit_of_measurement'] = unit.value
             if vehicle.maintenance.oil_service_due_at.enabled and vehicle.maintenance.oil_service_due_at.value is not None:
                 discovery_message['cmps'][f'{vin}_oil_service_due_at'] = {
                     'p': 'sensor',
@@ -645,8 +669,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.maintenance.oil_service_due_at.get_absolute_path()}',
                     'unique_id': f'{vin}_oil_service_due_at'
                 }
-            if vehicle.maintenance.oil_service_due_after.enabled and vehicle.maintenance.oil_service_due_after.value is not None \
-                    and vehicle.maintenance.oil_service_due_after.unit is not None:
+            if vehicle.maintenance.oil_service_due_after.enabled and vehicle.maintenance.oil_service_due_after.value is not None:
                 discovery_message['cmps'][f'{vin}_oil_service_due_after'] = {
                     'p': 'sensor',
                     'device_class': 'distance',
@@ -656,7 +679,9 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'unique_id': f'{vin}_oil_service_due_after'
                 }
                 if vehicle.maintenance.oil_service_due_after.unit is not None:
-                    discovery_message['cmps'][f'{vin}_oil_service_due_after']['unit_of_measurement'] = vehicle.maintenance.oil_service_due_after.unit.value
+                    _, unit = vehicle.maintenance.oil_service_due_after.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                    if unit is not None:
+                        discovery_message['cmps'][f'{vin}_oil_service_due_after']['unit_of_measurement'] = unit.value
         if SUPPORT_IMAGES and self.mqtt_plugin.mqtt_client.image_format == ImageFormat.PNG:
             if vehicle.images.enabled:
                 for image_id, image in vehicle.images.images.items():
@@ -742,7 +767,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 }
                 if vehicle.charging.type.value_type is not None and issubclass(vehicle.charging.type.value_type, Enum):
                     discovery_message['cmps'][f'{vin}_charging_type']['options'] = [item.value for item in vehicle.charging.type.value_type]
-            if vehicle.charging.rate.enabled and vehicle.charging.rate.value is not None and vehicle.charging.rate.unit is not None:
+            if vehicle.charging.rate.enabled and vehicle.charging.rate.value is not None:
                 discovery_message['cmps'][f'{vin}_charging_rate'] = {
                     'p': 'sensor',
                     'device_class': 'speed',
@@ -752,8 +777,10 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'unique_id': f'{vin}_charging_rate'
                 }
                 if vehicle.charging.rate.unit is not None:
-                    discovery_message['cmps'][f'{vin}_charging_rate']['unit_of_measurement'] = vehicle.charging.rate.unit.value
-            if vehicle.charging.power.enabled and vehicle.charging.power.value is not None and vehicle.charging.power.unit is not None:
+                    _, unit = vehicle.charging.rate.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                    if unit is not None:
+                        discovery_message['cmps'][f'{vin}_charging_rate']['unit_of_measurement'] = unit.value
+            if vehicle.charging.power.enabled and vehicle.charging.power.value is not None:
                 discovery_message['cmps'][f'{vin}_charging_power'] = {
                     'p': 'sensor',
                     'device_class': 'power',
@@ -763,7 +790,9 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     'unique_id': f'{vin}_charging_power'
                 }
                 if vehicle.charging.power.unit is not None:
-                    discovery_message['cmps'][f'{vin}_charging_power']['unit_of_measurement'] = vehicle.charging.power.unit.value
+                    _, unit = vehicle.charging.power.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                    if unit is not None:
+                        discovery_message['cmps'][f'{vin}_charging_power']['unit_of_measurement'] = unit.value
             if vehicle.charging.estimated_date_reached.enabled and vehicle.charging.estimated_date_reached.value is not None:
                 discovery_message['cmps'][f'{vin}_charging_estimated_date_reached'] = {
                     'p': 'sensor',
@@ -793,7 +822,9 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         if vehicle.charging.settings.target_level.precision is not None:
                             discovery_message['cmps'][f'{vin}_charging_target_level']['step'] = vehicle.charging.settings.target_level.precision
                         if vehicle.charging.settings.target_level.unit is not None:
-                            discovery_message['cmps'][f'{vin}_charging_target_level']['unit_of_measurement'] = vehicle.charging.settings.target_level.unit.value
+                            _, unit = vehicle.charging.settings.target_level.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                            if unit is not None:
+                                discovery_message['cmps'][f'{vin}_charging_target_level']['unit_of_measurement'] = unit.value
                 if vehicle.charging.settings.maximum_current.enabled and vehicle.charging.settings.maximum_current.value is not None:
                     discovery_message['cmps'][f'{vin}_charging_maximum_current'] = {
                         'p': 'sensor',
@@ -814,8 +845,9 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         if vehicle.charging.settings.maximum_current.precision is not None:
                             discovery_message['cmps'][f'{vin}_charging_maximum_current']['step'] = vehicle.charging.settings.maximum_current.precision
                         if vehicle.charging.settings.maximum_current.unit is not None:
-                            discovery_message['cmps'][f'{vin}_charging_maximum_current']['unit_of_measurement'] = \
-                                vehicle.charging.settings.maximum_current.unit.value
+                            _, unit = vehicle.charging.settings.maximum_current.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                            if unit is not None:
+                                discovery_message['cmps'][f'{vin}_charging_maximum_current']['unit_of_measurement'] = unit.value
                 if vehicle.charging.settings.auto_unlock.enabled and vehicle.charging.settings.auto_unlock.value is not None:
                     discovery_message['cmps'][f'{vin}_charging_auto_unlock'] = {
                         'p': 'binary_sensor',
