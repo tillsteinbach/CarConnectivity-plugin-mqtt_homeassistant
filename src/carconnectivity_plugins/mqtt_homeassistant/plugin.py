@@ -693,7 +693,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                             'content_type': 'image/png',
                             'unique_id': f'{vin}_{image_id}_image'
                         }
-        if isinstance(vehicle, ElectricVehicle):
+        if isinstance(vehicle, ElectricVehicle):  # pylint: disable=too-many-nested-blocks
             if vehicle.charging.connector.connection_state.enabled and vehicle.charging.connector.connection_state.value is not None:
                 if vehicle.charging.commands.enabled and 'start-stop' in vehicle.charging.commands.commands \
                         and vehicle.charging.state.enabled and vehicle.charging.state.value is not None:
