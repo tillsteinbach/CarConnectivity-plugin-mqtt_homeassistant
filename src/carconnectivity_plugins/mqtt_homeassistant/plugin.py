@@ -242,6 +242,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             discovery_message['cmps'][f'{vin}_odometer'] = {
                 'p': 'sensor',
                 'device_class': 'distance',
+                'state_class': 'total',
                 'icon': 'mdi:counter',
                 'name': 'Odometer',
                 'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.odometer.get_absolute_path()}',
@@ -278,6 +279,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 discovery_message['cmps'][f'{vin}_total_range'] = {
                     'p': 'sensor',
                     'device_class': 'distance',
+                    'state_class': 'measurement',
                     'name': 'Total Range',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.drives.total_range.get_absolute_path()}',
                     'unique_id': f'{vin}_total_range'
@@ -292,6 +294,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         discovery_message['cmps'][f'{vin}_{drive_id}_range'] = {
                             'p': 'sensor',
                             'device_class': 'distance',
+                            'state_class': 'measurement',
                             'name': f'Range ({drive_id})',
                             'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.range.get_absolute_path()}',
                             'unique_id': f'{vin}_{drive_id}_range'
@@ -304,6 +307,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         if drive.level.enabled and drive.level.value is not None:
                             discovery_message['cmps'][f'{vin}_{drive_id}_level'] = {
                                 'p': 'sensor',
+                                'state_class': 'measurement',
                                 'name': f'Tank ({drive_id})',
                                 'icon': 'mdi:gas-station',
                                 'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.level.get_absolute_path()}',
@@ -317,6 +321,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                             if drive.adblue_level.enabled and drive.adblue_level.value is not None:
                                 discovery_message['cmps'][f'{vin}_{drive_id}_adbluelevel'] = {
                                     'p': 'sensor',
+                                    'state_class': 'measurement',
                                     'name': f'AdBlue Tank ({drive_id})',
                                     'icon': 'mdi:gas-station',
                                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.adblue_level.get_absolute_path()}',
@@ -330,6 +335,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                 discovery_message['cmps'][f'{vin}_{drive_id}_adbluerange'] = {
                                     'p': 'sensor',
                                     'device_class': 'distance',
+                                    'state_class': 'measurement',
                                     'name': f'AdBlue Range ({drive_id})',
                                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.adblue_range.get_absolute_path()}',
                                     'unique_id': f'{vin}_{drive_id}_adbluerange'
@@ -343,6 +349,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                             discovery_message['cmps'][f'{vin}_{drive_id}_level'] = {
                                 'p': 'sensor',
                                 'device_class': 'battery',
+                                'state_class': 'measurement',
                                 'icon': 'mdi:battery',
                                 'name': f'SoC ({drive_id})',
                                 'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.level.get_absolute_path()}',
@@ -357,6 +364,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                 discovery_message['cmps'][f'{vin}_{drive_id}_battery_temperature'] = {
                                     'p': 'sensor',
                                     'device_class': 'temperature',
+                                    'state_class': 'measurement',
                                     'icon': 'mdi:thermometer-lines',
                                     'name': f'Battery Temperature ({drive_id})',
                                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.battery.temperature.get_absolute_path()}',
@@ -525,6 +533,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     and vehicle.position.longitude.enabled and vehicle.position.longitude.value is not None:
                 discovery_message['cmps'][f'{vin}_latitude'] = {
                     'p': 'sensor',
+                    'state_class': 'measurement_angle',
                     'name': 'Position Latitude',
                     'icon': 'mdi:latitude',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.position.latitude.get_absolute_path()}',
@@ -536,6 +545,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         discovery_message['cmps'][f'{vin}_latitude']['unit_of_measurement'] = unit.value
                 discovery_message['cmps'][f'{vin}_longitude'] = {
                     'p': 'sensor',
+                    'state_class': 'measurement_angle',
                     'name': 'Position Longitude',
                     'icon': 'mdi:longitude',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.position.longitude.get_absolute_path()}',
@@ -628,6 +638,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             discovery_message['cmps'][f'{vin}_outside_temperature'] = {
                 'p': 'sensor',
                 'device_class': 'temperature',
+                'state_class': 'measurement',
                 'icon': 'mdi:sun-thermometer-outline',
                 'name': 'Outside Temperature',
                 'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.outside_temperature.get_absolute_path()}',
@@ -771,6 +782,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 discovery_message['cmps'][f'{vin}_charging_rate'] = {
                     'p': 'sensor',
                     'device_class': 'speed',
+                    'state_class': 'measurement',
                     'icon': 'mdi:speedometer',
                     'name': 'Charging Rate',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.rate.get_absolute_path()}',
@@ -784,6 +796,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 discovery_message['cmps'][f'{vin}_charging_power'] = {
                     'p': 'sensor',
                     'device_class': 'power',
+                    'state_class': 'measurement',
                     'icon': 'mdi:speedometer',
                     'name': 'Charging Power',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.power.get_absolute_path()}',
@@ -806,6 +819,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 if vehicle.charging.settings.target_level.enabled and vehicle.charging.settings.target_level.value is not None:
                     discovery_message['cmps'][f'{vin}_charging_target_level'] = {
                         'p': 'sensor',
+                        'state_class': 'measurement',
                         'icon': 'mdi:battery',
                         'name': 'Charging Target Level',
                         'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.target_level.get_absolute_path()}',
@@ -829,6 +843,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     discovery_message['cmps'][f'{vin}_charging_maximum_current'] = {
                         'p': 'sensor',
                         'device_class': 'power',
+                        'state_class': 'measurement',
                         'icon': 'mdi:speedometer',
                         'name': 'Charging Maximum Current',
                         'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.maximum_current.get_absolute_path()}',
