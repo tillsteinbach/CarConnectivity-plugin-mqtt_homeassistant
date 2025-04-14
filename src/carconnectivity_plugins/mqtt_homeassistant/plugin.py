@@ -533,7 +533,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                     and vehicle.position.longitude.enabled and vehicle.position.longitude.value is not None:
                 discovery_message['cmps'][f'{vin}_latitude'] = {
                     'p': 'sensor',
-                    'state_class': 'measurement_angle',
+                    'state_class': 'measurement',
                     'name': 'Position Latitude',
                     'icon': 'mdi:latitude',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.position.latitude.get_absolute_path()}',
@@ -545,7 +545,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         discovery_message['cmps'][f'{vin}_latitude']['unit_of_measurement'] = unit.value
                 discovery_message['cmps'][f'{vin}_longitude'] = {
                     'p': 'sensor',
-                    'state_class': 'measurement_angle',
+                    'state_class': 'measurement',
                     'name': 'Position Longitude',
                     'icon': 'mdi:longitude',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.position.longitude.get_absolute_path()}',
