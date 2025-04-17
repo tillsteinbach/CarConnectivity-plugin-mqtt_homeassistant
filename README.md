@@ -14,6 +14,9 @@
 
 <img src="https://raw.githubusercontent.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/main/screenshots/homeassistant1.png" width="600">
 
+### Install using Pre-packaged Addon
+There is a packaged addon available here: [carconnectivity-addon](https://github.com/Pulpyyyy/carconnectivity-addon)
+
 ### Install using PIP
 If you want to use the CarConnectivity Plugin for Home Assistant, the easiest way is to obtain it from [PyPI](https://pypi.org/project/carconnectivity-plugin-mqtt_homeassistant/). Just install it using:
 ```bash
