@@ -350,7 +350,6 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                 'p': 'sensor',
                                 'device_class': 'battery',
                                 'state_class': 'measurement',
-                                'icon': 'mdi:battery',
                                 'name': f'SoC ({drive_id})',
                                 'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.level.get_absolute_path()}',
                                 'unique_id': f'{vin}_{drive_id}_level'
