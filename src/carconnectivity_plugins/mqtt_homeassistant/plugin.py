@@ -25,10 +25,10 @@ from carconnectivity_plugins.mqtt.plugin import Plugin as MqttPlugin, ImageForma
 
 from carconnectivity_plugins.mqtt_homeassistant._version import __version__
 
-SUPPORT_IMAGES = False
+SUPPORT_IMAGES = False  # pylint: disable=invalid-name
 try:
     from PIL import Image  # pylint: disable=unused-import # noqa: F401
-    SUPPORT_IMAGES = True
+    SUPPORT_IMAGES = True  # pylint: disable=invalid-name
 except ImportError:
     pass
 
