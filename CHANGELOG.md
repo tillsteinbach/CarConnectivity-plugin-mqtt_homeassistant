@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.4.1] - 2025-11-02
+### Changed
+- Updated some dependencies
+
 ## [0.4] - 2025-04-17
 ### Added
 - state_class attribute added to all entities this value is relevant for
@@ -38,7 +42,8 @@ Initial release, let's go and give this to the public to try out...
 Most attributes are provided as entities in Auto discovery mode.
 Support for MQTT Lock ans MQTT HAVC is provided.
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/compare/v0.4...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.4.1
 [0.4]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.4
 [0.3]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.3
 [0.2]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.2
