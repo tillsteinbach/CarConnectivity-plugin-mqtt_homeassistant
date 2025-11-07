@@ -17,12 +17,12 @@ dependencies = [
     "carconnectivity-plugin-mqtt>=0.7.4",
 ]
 readme = "README.md"
+license = "MIT"
 license-files = [
     "LICENSE",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "License :: OSI Approved :: MIT License",
     "Intended Audience :: End Users/Desktop",
     "Intended Audience :: System Administrators",
     "Programming Language :: Python :: 3.9",
