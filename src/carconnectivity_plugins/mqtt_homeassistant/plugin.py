@@ -33,7 +33,7 @@ try:
     SUPPORT_IMAGES = True  # pylint: disable=invalid-name
 except ImportError as exc:
     if str(exc) == "No module named 'PIL'":
-        SUPPORT_IMAGES_STR = str(exc) + " (cannot find pillow library)"
+        SUPPORT_IMAGES_STR = str(exc) + " (cannot find pillow library)"  # pylint: disable=invalid-name
     else:
         SUPPORT_IMAGES_STR = str(exc)  # pylint: disable=invalid-name
 # pylint: enable=duplicate-code
