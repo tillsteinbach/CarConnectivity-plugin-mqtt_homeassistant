@@ -25,12 +25,18 @@ from carconnectivity_plugins.mqtt.plugin import Plugin as MqttPlugin, ImageForma
 
 from carconnectivity_plugins.mqtt_homeassistant._version import __version__
 
-SUPPORT_IMAGES = False  # pylint: disable=invalid-name
+# pylint: disable=duplicate-code
+SUPPORT_IMAGES: bool = False  # pylint: disable=invalid-name
+SUPPORT_IMAGES_STR: str = ""  # pylint: disable=invalid-name
 try:
-    from PIL import Image  # pylint: disable=unused-import # noqa: F401
+    import PIL  # pylint: disable=unused-import # noqa_F401
     SUPPORT_IMAGES = True  # pylint: disable=invalid-name
-except ImportError:
-    pass
+except ImportError as exc:
+    if str(exc) == "No module named 'PIL'":
+        SUPPORT_IMAGES_STR = str(exc) + " (cannot find pillow library)"
+    else:
+        SUPPORT_IMAGES_STR = str(exc)  # pylint: disable=invalid-name
+# pylint: enable=duplicate-code
 
 if TYPE_CHECKING:
     from typing import Dict, Optional, Any
@@ -89,6 +95,11 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
 
     def get_version(self) -> str:
         return __version__
+
+    def get_features(self) -> dict[str, tuple[bool, str]]:
+        features: dict[str, tuple[bool, str]] = {}
+        features['Images'] = (SUPPORT_IMAGES, SUPPORT_IMAGES_STR)
+        return features
 
     def get_type(self) -> str:
         return "carconnectivity-plugin-mqtt_homeassistant"
