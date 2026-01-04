@@ -52,8 +52,8 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         car_connectivity (CarConnectivity): An instance of CarConnectivity.
         config (Dict): Configuration dictionary containing connection details.
     """
-    def __init__(self, plugin_id: str, car_connectivity: CarConnectivity, config: Dict) -> None:
-        BasePlugin.__init__(self, plugin_id=plugin_id, car_connectivity=car_connectivity, config=config, log=LOG)
+    def __init__(self, plugin_id: str, car_connectivity: CarConnectivity, config: Dict, initialization: Optional[Dict] = None) -> None:
+        BasePlugin.__init__(self, plugin_id=plugin_id, car_connectivity=car_connectivity, config=config, log=LOG, initialization=initialization)
 
         self.mqtt_plugin: Optional[MqttPlugin] = None
         self.homeassistant_discovery: bool = True
