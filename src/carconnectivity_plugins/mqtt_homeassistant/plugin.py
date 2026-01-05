@@ -314,6 +314,32 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                             _, unit = drive.range.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
                             if unit is not None:
                                 discovery_message['cmps'][f'{vin}_{drive_id}_range']['unit_of_measurement'] = unit.value
+                    if drive.range_estimated_full.enabled and drive.range_estimated_full.value is not None:
+                        discovery_message['cmps'][f'{vin}_{drive_id}_range_estimated_full'] = {
+                            'p': 'sensor',
+                            'device_class': 'distance',
+                            'state_class': 'measurement',
+                            'name': f'Range at 100% ({drive_id})',
+                            'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.range_estimated_full.get_absolute_path()}',
+                            'unique_id': f'{vin}_{drive_id}_range_estimated_full'
+                        }
+                        if drive.range_estimated_full.unit is not None:
+                            _, unit = drive.range_estimated_full.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                            if unit is not None:
+                                discovery_message['cmps'][f'{vin}_{drive_id}_range_estimated_full']['unit_of_measurement'] = unit.value
+                    if drive.range_wltp.enabled and drive.range_wltp.value is not None:
+                        discovery_message['cmps'][f'{vin}_{drive_id}_range_wltp'] = {
+                            'p': 'sensor',
+                            'device_class': 'distance',
+                            'state_class': 'measurement',
+                            'name': f'Range WLTP ({drive_id})',
+                            'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.range_wltp.get_absolute_path()}',
+                            'unique_id': f'{vin}_{drive_id}_range_wltp'
+                        }
+                        if drive.range_wltp.unit is not None:
+                            _, unit = drive.range_wltp.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                            if unit is not None:
+                                discovery_message['cmps'][f'{vin}_{drive_id}_range_wltp']['unit_of_measurement'] = unit.value
                     if isinstance(drive, CombustionDrive):
                         if drive.level.enabled and drive.level.value is not None:
                             discovery_message['cmps'][f'{vin}_{drive_id}_level'] = {
@@ -328,6 +354,32 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                 _, unit = drive.level.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
                                 if unit is not None:
                                     discovery_message['cmps'][f'{vin}_{drive_id}_level']['unit_of_measurement'] = unit.value
+                        if drive.consumption.enabled and drive.consumption.value is not None:
+                            discovery_message['cmps'][f'{vin}_{drive_id}_consumption'] = {
+                                'p': 'sensor',
+                                'state_class': 'measurement',
+                                'name': f'Consumption ({drive_id})',
+                                'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.consumption.get_absolute_path()}',
+                                'unique_id': f'{vin}_{drive_id}_consumption'
+                            }
+                            if drive.consumption.unit is not None:
+                                _, unit = drive.consumption.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                if unit is not None:
+                                    discovery_message['cmps'][f'{vin}_{drive_id}_consumption']['unit_of_measurement'] = unit.value
+                        if drive.fuel_tank is not None and drive.fuel_tank.enabled:
+                            if drive.fuel_tank.available_capacity.enabled and drive.fuel_tank.available_capacity.value is not None:
+                                discovery_message['cmps'][f'{vin}_{drive_id}_available_capacity'] = {
+                                    'p': 'sensor',
+                                    'device_class': 'volume',
+                                    'state_class': 'measurement',
+                                    'name': f'Available Capacity ({drive_id})',
+                                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.fuel_tank.available_capacity.get_absolute_path()}',
+                                    'unique_id': f'{vin}_{drive_id}_available_capacity'
+                                }
+                                if drive.fuel_tank.available_capacity.unit is not None:
+                                    _, unit = drive.fuel_tank.available_capacity.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                    if unit is not None:
+                                        discovery_message['cmps'][f'{vin}_{drive_id}_available_capacity']['unit_of_measurement'] = unit.value
                         if isinstance(drive, DieselDrive):
                             if drive.adblue_level.enabled and drive.adblue_level.value is not None:
                                 discovery_message['cmps'][f'{vin}_{drive_id}_adbluelevel'] = {
@@ -355,6 +407,45 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                     _, unit = drive.adblue_range.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
                                     if unit is not None:
                                         discovery_message['cmps'][f'{vin}_{drive_id}_adbluerange']['unit_of_measurement'] = unit.value
+                            if drive.adblue_range_estimated_full.enabled and drive.adblue_range_estimated_full.value is not None:
+                                discovery_message['cmps'][f'{vin}_{drive_id}_adblue_range_estimated_full'] = {
+                                    'p': 'sensor',
+                                    'device_class': 'distance',
+                                    'state_class': 'measurement',
+                                    'name': f'AdBlue Range at 100% ({drive_id})',
+                                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.adblue_range_estimated_full.get_absolute_path()}',
+                                    'unique_id': f'{vin}_{drive_id}_adblue_range_estimated_full'
+                                }
+                                if drive.adblue_range_estimated_full.unit is not None:
+                                    _, unit = drive.adblue_range_estimated_full.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                    if unit is not None:
+                                        discovery_message['cmps'][f'{vin}_{drive_id}_adblue_range_estimated_full']['unit_of_measurement'] = unit.value
+                            if drive.adblue_consumption.enabled and drive.adblue_consumption.value is not None:
+                                discovery_message['cmps'][f'{vin}_{drive_id}_adblue_consumption'] = {
+                                    'p': 'sensor',
+                                    'state_class': 'measurement',
+                                    'name': f'AdBlue Consumption ({drive_id})',
+                                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.adblue_consumption.get_absolute_path()}',
+                                    'unique_id': f'{vin}_{drive_id}_adblue_consumption'
+                                }
+                                if drive.adblue_consumption.unit is not None:
+                                    _, unit = drive.adblue_consumption.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                    if unit is not None:
+                                        discovery_message['cmps'][f'{vin}_{drive_id}_adblue_consumption']['unit_of_measurement'] = unit.value
+                            if drive.adblue_tank is not None and drive.adblue_tank.enabled:
+                                if drive.adblue_tank.available_capacity.enabled and drive.adblue_tank.available_capacity.value is not None:
+                                    discovery_message['cmps'][f'{vin}_{drive_id}_adblue_available_capacity'] = {
+                                        'p': 'sensor',
+                                        'device_class': 'volume',
+                                        'state_class': 'measurement',
+                                        'name': f'AdBlue Available Capacity ({drive_id})',
+                                        'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.adblue_tank.available_capacity.get_absolute_path()}',
+                                        'unique_id': f'{vin}_{drive_id}_adblue_available_capacity'
+                                    }
+                                    if drive.adblue_tank.available_capacity.unit is not None:
+                                        _, unit = drive.adblue_tank.available_capacity.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                        if unit is not None:
+                                            discovery_message['cmps'][f'{vin}_{drive_id}_adblue_available_capacity']['unit_of_measurement'] = unit.value
                     elif isinstance(drive, ElectricDrive):
                         if drive.level.enabled and drive.level.value is not None:
                             discovery_message['cmps'][f'{vin}_{drive_id}_level'] = {
@@ -369,6 +460,19 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                 _, unit = drive.level.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
                                 if unit is not None:
                                     discovery_message['cmps'][f'{vin}_{drive_id}_level']['unit_of_measurement'] = unit.value
+                        if drive.consumption.enabled and drive.consumption.value is not None:
+                            discovery_message['cmps'][f'{vin}_{drive_id}_consumption'] = {
+                                'p': 'sensor',
+                                'device_class': 'energy_distance',
+                                'state_class': 'measurement',
+                                'name': f'Consumption ({drive_id})',
+                                'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.consumption.get_absolute_path()}',
+                                'unique_id': f'{vin}_{drive_id}_consumption'
+                            }
+                            if drive.consumption.unit is not None:
+                                _, unit = drive.consumption.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                if unit is not None:
+                                    discovery_message['cmps'][f'{vin}_{drive_id}_consumption']['unit_of_measurement'] = unit.value
                         if drive.battery is not None and drive.battery.enabled:
                             if drive.battery.temperature.enabled and drive.battery.temperature.value is not None:
                                 discovery_message['cmps'][f'{vin}_{drive_id}_battery_temperature'] = {
@@ -384,6 +488,32 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                     _, unit = drive.battery.temperature.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
                                     if unit is not None:
                                         discovery_message['cmps'][f'{vin}_{drive_id}_battery_temperature']['unit_of_measurement'] = unit.value
+                            if drive.battery.total_capacity.enabled and drive.battery.total_capacity.value is not None:
+                                discovery_message['cmps'][f'{vin}_{drive_id}_battery_total_capacity'] = {
+                                    'p': 'sensor',
+                                    'device_class': 'energy',
+                                    'state_class': 'measurement',
+                                    'name': f'Battery Total Capacity ({drive_id})',
+                                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.battery.total_capacity.get_absolute_path()}',
+                                    'unique_id': f'{vin}_{drive_id}_battery_total_capacity'
+                                }
+                                if drive.battery.total_capacity.unit is not None:
+                                    _, unit = drive.battery.total_capacity.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                    if unit is not None:
+                                        discovery_message['cmps'][f'{vin}_{drive_id}_battery_temperature']['unit_of_measurement'] = unit.value
+                            if drive.battery.available_capacity.enabled and drive.battery.available_capacity.value is not None:
+                                discovery_message['cmps'][f'{vin}_{drive_id}_battery_available_capacity'] = {
+                                    'p': 'sensor',
+                                    'device_class': 'energy',
+                                    'state_class': 'measurement',
+                                    'name': f'Battery Available Capacity ({drive_id})',
+                                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.battery.available_capacity.get_absolute_path()}',
+                                    'unique_id': f'{vin}_{drive_id}_battery_available_capacity'
+                                }
+                                if drive.battery.available_capacity.unit is not None:
+                                    _, unit = drive.battery.available_capacity.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                    if unit is not None:
+                                        discovery_message['cmps'][f'{vin}_{drive_id}_battery_available_capacity']['unit_of_measurement'] = unit.value
         if vehicle.doors is not None and vehicle.doors.enabled:
             if vehicle.doors.open_state.enabled and vehicle.doors.open_state.value is not None:
                 discovery_message['cmps'][f'{vin}_open_state'] = {
