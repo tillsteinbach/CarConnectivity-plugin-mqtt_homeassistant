@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.6] - 2026-01-05
+### Added
+- Adds new attributes for supported vehicles for range at 100%, consumption, battery and tank capacity, wltp range
+
 ## [0.5.1] - 2026-01-04
 ### Fixed
 - Updated version requirements for carconnectivity-plugin-mqtt
@@ -52,7 +56,8 @@ Initial release, let's go and give this to the public to try out...
 Most attributes are provided as entities in Auto discovery mode.
 Support for MQTT Lock ans MQTT HAVC is provided.
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/compare/v0.5.1...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/compare/v0.6...HEAD
+[0.6]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.6
 [0.5.1]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.5.1
 [0.5]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.5
 [0.4.1]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.4.1
