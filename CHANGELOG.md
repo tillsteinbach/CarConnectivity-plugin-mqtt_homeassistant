@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.6.1] - 2026-01-11
+### Changed
+- Compatibility for Carconnectivity 11.5
+
 ## [0.6] - 2026-01-05
 ### Added
 - Adds new attributes for supported vehicles for range at 100%, consumption, battery and tank capacity, wltp range
