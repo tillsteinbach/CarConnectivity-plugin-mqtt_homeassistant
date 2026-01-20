@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.6.2] - 2026-01-20
+### Added
+- Adds a button to force update all carconnectivity data
+
 ## [0.6.1] - 2026-01-11
 ### Changed
 - Compatibility for Carconnectivity 11.5
@@ -60,7 +64,8 @@ Initial release, let's go and give this to the public to try out...
 Most attributes are provided as entities in Auto discovery mode.
 Support for MQTT Lock ans MQTT HAVC is provided.
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/compare/v0.6.1...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.6.2
 [0.6.1]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.6.1
 [0.6]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.6
 [0.5.1]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.5.1
