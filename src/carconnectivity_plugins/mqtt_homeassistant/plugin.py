@@ -130,6 +130,16 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             },
             'cmps': {}
         }
+        if self.car_connectivity.commands.enabled and 'update' in self.car_connectivity.commands.commands:
+            discovery_message['cmps']['update'] = {
+                'p': 'button',
+                'name': 'Force Update',
+                'icon': 'mdi:refresh',
+                'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{self.car_connectivity.commands.commands["update"].get_absolute_path()}'
+                + '_writetopic',
+                'payload_press': 'update',
+                'unique_id': 'update'
+            }
         for connector in self.car_connectivity.connectors.connectors.values():
             if connector.enabled:
                 if connector.healthy.enabled and connector.healthy.value is not None:
