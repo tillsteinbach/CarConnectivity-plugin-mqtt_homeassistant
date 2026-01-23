@@ -131,14 +131,14 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             'cmps': {}
         }
         if self.car_connectivity.commands.enabled and 'update' in self.car_connectivity.commands.commands:
-            discovery_message['cmps']['update'] = {
+            discovery_message['cmps'][f'{car_connectivity_id}_update'] = {
                 'p': 'button',
                 'name': 'Force Update',
                 'icon': 'mdi:refresh',
                 'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{self.car_connectivity.commands.commands["update"].get_absolute_path()}'
                 + '_writetopic',
                 'payload_press': 'update',
-                'unique_id': 'update'
+                'unique_id': f'{car_connectivity_id}_update'
             }
         for connector in self.car_connectivity.connectors.connectors.values():
             if connector.enabled:
@@ -152,6 +152,16 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         'payload_off': 'False',
                         'payload_on': 'True',
                         'unique_id': f'{car_connectivity_id}_{connector.id}_healthy'
+                    }
+                if connector.commands.enabled and 'update' in connector.commands.commands:
+                    discovery_message['cmps'][f'{car_connectivity_id}_{connector.id}_update'] = {
+                        'p': 'button',
+                        'name': f'Force {connector.get_name()} Update',
+                        'icon': 'mdi:refresh',
+                        'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{connector.commands.commands["update"].get_absolute_path()}'
+                        + '_writetopic',
+                        'payload_press': 'update',
+                        'unique_id': f'{car_connectivity_id}_{connector.id}_update'
                     }
                 for child in connector.children:
                     if child.id == 'connection_state' and isinstance(child, EnumAttribute) and child.enabled:
