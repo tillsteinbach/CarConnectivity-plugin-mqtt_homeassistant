@@ -92,6 +92,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
         if self.mqtt_plugin is not None:
             self.mqtt_plugin.mqtt_client.remove_on_message_callback(self._on_message_callback)
             self.mqtt_plugin.mqtt_client.remove_on_connect_callback(self._on_connect_callback)
+        self.car_connectivity.remove_observer(self._on_carconnectivity_event)
         return super().shutdown()
 
     def get_version(self) -> str:
