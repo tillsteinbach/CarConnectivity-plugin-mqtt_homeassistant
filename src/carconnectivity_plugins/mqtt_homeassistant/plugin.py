@@ -522,7 +522,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                 if drive.battery.total_capacity.unit is not None:
                                     _, unit = drive.battery.total_capacity.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
                                     if unit is not None:
-                                        discovery_message['cmps'][f'{vin}_{drive_id}_battery_temperature']['unit_of_measurement'] = unit.value
+                                        discovery_message['cmps'][f'{vin}_{drive_id}_battery_total_capacity']['unit_of_measurement'] = unit.value
                             if drive.battery.available_capacity.enabled and drive.battery.available_capacity.value is not None:
                                 discovery_message['cmps'][f'{vin}_{drive_id}_battery_available_capacity'] = {
                                     'p': 'sensor',
