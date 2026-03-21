@@ -682,14 +682,12 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         discovery_message['cmps'][f'{vin}_{window_id}_window_heating_state'] = {
                             'p': 'binary_sensor',
                             'name': f'Window Heating State ({window_id})',
-                            'icon': 'mdi:car-defrost-front',
+                            'icon': 'mdi:car-defrost-rear' if 'rear' in window_id else 'mdi:car-defrost-front',
                             'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{window.heating_state.get_absolute_path()}',
                             'payload_off': 'off',
                             'payload_on': 'on',
                             'unique_id': f'{vin}_{window_id}_window_heating_state'
                         }
-                    if 'rear' in window_id:
-                        discovery_message['cmps'][f'{vin}_{window_id}_window_heating_state']['icon'] = 'mdi:car-defrost-rear'
 
         if vehicle.position.enabled:
             # pylint: disable-next=too-many-boolean-expressions
@@ -769,7 +767,8 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         'payload_off': 'stop',
                         'unique_id': f'{vin}_climatization_start_stop'
                     }
-            if vehicle.climatization.settings.enabled and vehicle.climatization.settings.target_temperature.enabled:
+            if vehicle.climatization.settings.enabled and vehicle.climatization.settings.target_temperature.enabled \
+                    and f'{vin}_climatization_start_stop' in discovery_message['cmps']:
                 if vehicle.climatization.settings.target_temperature.value is not None:
                     discovery_message['cmps'][f'{vin}_climatization_start_stop']['temperature_state_topic'] = \
                         f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.climatization.settings.target_temperature.get_absolute_path()}'
@@ -1006,7 +1005,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 if vehicle.charging.settings.maximum_current.enabled and vehicle.charging.settings.maximum_current.value is not None:
                     discovery_message['cmps'][f'{vin}_charging_maximum_current'] = {
                         'p': 'sensor',
-                        'device_class': 'power',
+                        'device_class': 'current',
                         'state_class': 'measurement',
                         'icon': 'mdi:speedometer',
                         'name': 'Charging Maximum Current',
@@ -1033,16 +1032,16 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         'name': 'Auto unlock charging connector',
                         'icon': 'mdi:lock',
                         'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.auto_unlock.get_absolute_path()}',
-                        'state_on': True,
-                        'state_off': False,
+                        'state_on': 'on',
+                        'state_off': 'off',
                         'unique_id': f'{vin}_charging_auto_unlock'
                     }
                     if vehicle.charging.settings.auto_unlock.is_changeable:
                         discovery_message['cmps'][f'{vin}_charging_auto_unlock']['p'] = 'switch'
                         discovery_message['cmps'][f'{vin}_charging_auto_unlock']['command_topic'] = \
                             f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.auto_unlock.get_absolute_path()}_writetopic'
-                        discovery_message['cmps'][f'{vin}_charging_auto_unlock']['payload_on'] = True
-                        discovery_message['cmps'][f'{vin}_charging_auto_unlock']['payload_off'] = False
+                        discovery_message['cmps'][f'{vin}_charging_auto_unlock']['payload_on'] = 'on'
+                        discovery_message['cmps'][f'{vin}_charging_auto_unlock']['payload_off'] = 'off'
         if vehicle.position.enabled and vehicle.position.latitude.enabled and vehicle.position.latitude.value is not None \
                 and vehicle.position.longitude.enabled and vehicle.position.longitude.value is not None:
             discovery_message['cmps'][f'{vin}_position'] = {
