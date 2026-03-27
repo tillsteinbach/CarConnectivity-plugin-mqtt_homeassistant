@@ -825,6 +825,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 discovery_message['cmps'][f'{vin}_inspection_due_after'] = {
                     'p': 'sensor',
                     'device_class': 'distance',
+                    'state_class': 'measurement',
                     'icon': 'mdi:tools',
                     'name': 'Inspection Due After',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.maintenance.inspection_due_after.get_absolute_path()}',
@@ -847,6 +848,7 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 discovery_message['cmps'][f'{vin}_oil_service_due_after'] = {
                     'p': 'sensor',
                     'device_class': 'distance',
+                    'state_class': 'measurement',
                     'icon': 'mdi:oil',
                     'name': 'Oil Service Due After',
                     'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.maintenance.oil_service_due_after.get_absolute_path()}',
