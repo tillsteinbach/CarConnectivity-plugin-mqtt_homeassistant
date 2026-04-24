@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.6.5] - 2026-04-24
+### Changed
+- Updated dependencies (carconnectivity-plugin-mqtt, pylint, bandit, Flask)
+
 ## [0.6.4] - 2026-02-12
 ### Fixed
 - Fixes battery temperature unit assignment
@@ -72,7 +76,8 @@ Initial release, let's go and give this to the public to try out...
 Most attributes are provided as entities in Auto discovery mode.
 Support for MQTT Lock ans MQTT HAVC is provided.
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/compare/v0.6.4...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/compare/v0.6.5...HEAD
+[0.6.5]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.6.4
 [0.6.3]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.6.3
 [0.6.2]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.6.2
