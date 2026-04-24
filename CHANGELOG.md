@@ -77,7 +77,7 @@ Most attributes are provided as entities in Auto discovery mode.
 Support for MQTT Lock ans MQTT HAVC is provided.
 
 [unreleased]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/compare/v0.6.5...HEAD
-[0.6.5]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/compare/v0.6.4...v0.6.5
+[0.6.5]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.6.5
 [0.6.4]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.6.4
 [0.6.3]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.6.3
 [0.6.2]: https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant/releases/tag/v0.6.2
