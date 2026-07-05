@@ -172,8 +172,6 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                             'name': f'{connector.get_name()} Connection State',
                             'icon': 'mdi:lan-connect',
                             'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{child.get_absolute_path()}',
-                            'payload_off': 'False',
-                            'payload_on': 'True',
                             'unique_id': f'{car_connectivity_id}_{connector.id}_connection_state'
                         }
                         if child.value_type is not None and issubclass(child.value_type, Enum):
@@ -201,8 +199,6 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                             'name': f'{plugin.get_name()} Connected',
                             'icon': 'mdi:lan-connect',
                             'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{child.get_absolute_path()}',
-                            'payload_off': 'False',
-                            'payload_on': 'True',
                             'unique_id': f'{car_connectivity_id}_{plugin.id}_connection_state'
                         }
                         if child.value_type is not None and issubclass(child.value_type, Enum):
