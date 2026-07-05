@@ -1067,6 +1067,23 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                             f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.auto_unlock.get_absolute_path()}_writetopic'
                         discovery_message['cmps'][f'{vin}_charging_auto_unlock']['payload_on'] = 'on'
                         discovery_message['cmps'][f'{vin}_charging_auto_unlock']['payload_off'] = 'off'
+                # charge_mode is an optional connector-provided EnumAttribute (e.g. the
+                # vw_eu_data_act selected charge mode). It is not a standard core
+                # Settings attribute, so guard with getattr/isinstance: connectors that
+                # do not expose it are simply skipped (no regression).
+                charge_mode = getattr(vehicle.charging.settings, 'charge_mode', None)
+                if isinstance(charge_mode, EnumAttribute) and charge_mode.enabled and charge_mode.value is not None:
+                    discovery_message['cmps'][f'{vin}_charge_mode'] = {
+                        'p': 'sensor',
+                        'device_class': 'enum',
+                        'icon': 'mdi:ev-station',
+                        'name': 'Charge Mode',
+                        'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{charge_mode.get_absolute_path()}',
+                        'unique_id': f'{vin}_charge_mode'
+                    }
+                    if charge_mode.value_type is not None and issubclass(charge_mode.value_type, Enum):
+                        discovery_message['cmps'][f'{vin}_charge_mode']['options'] = \
+                            [item.value for item in charge_mode.value_type]
         if vehicle.position.enabled and vehicle.position.latitude.enabled and vehicle.position.latitude.value is not None \
                 and vehicle.position.longitude.enabled and vehicle.position.longitude.value is not None:
             discovery_message['cmps'][f'{vin}_position'] = {
