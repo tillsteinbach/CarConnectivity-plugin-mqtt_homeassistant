@@ -11,7 +11,7 @@ from carconnectivity.vehicle import GenericVehicle, ElectricVehicle
 from carconnectivity.drive import ElectricDrive, CombustionDrive, DieselDrive
 from carconnectivity.observable import Observable
 from carconnectivity.errors import ConfigurationError
-from carconnectivity.attributes import FloatAttribute, EnumAttribute, GenericAttribute
+from carconnectivity.attributes import DateAttribute, FloatAttribute, EnumAttribute, GenericAttribute
 from carconnectivity.position import Position
 from carconnectivity.charging import Charging
 from carconnectivity.doors import Doors
@@ -1077,6 +1077,23 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 'source_type': 'gps',
                 'unique_id': f'{vin}_position'
             }
+        # Generic: surface any vehicle-level DateAttribute (e.g. a connector's data
+        # capture time) as a timestamp sensor, so date attributes a connector exposes
+        # show up as real datetimes without per-attribute wiring here. The explicit
+        # date sensors above live on sub-objects (climatization, maintenance) and so
+        # are not duplicated; the `not in cmps` guard covers any remaining overlap.
+        for child in vehicle.children:
+            if isinstance(child, DateAttribute) and child.enabled and child.value is not None:
+                key = f'{vin}_{child.id}'
+                if key not in discovery_message['cmps']:
+                    discovery_message['cmps'][key] = {
+                        'p': 'sensor',
+                        'device_class': 'timestamp',
+                        'icon': 'mdi:clock-outline',
+                        'name': child.id.replace('_', ' ').title(),
+                        'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{child.get_absolute_path()}',
+                        'unique_id': key,
+                    }
         for sensor in discovery_message['cmps'].values():
             sensor['availability'] = [{
                 'topic': f'{self.mqtt_plugin.mqtt_client.prefix}{self.mqtt_plugin.connection_state.get_absolute_path()}',
