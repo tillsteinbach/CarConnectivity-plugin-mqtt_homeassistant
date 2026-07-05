@@ -414,6 +414,19 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                     _, unit = drive.fuel_tank.available_capacity.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
                                     if unit is not None:
                                         discovery_message['cmps'][f'{vin}_{drive_id}_available_capacity']['unit_of_measurement'] = unit.value
+                        if drive.oil_level.enabled and drive.oil_level.value is not None:
+                            discovery_message['cmps'][f'{vin}_{drive_id}_oil_level'] = {
+                                'p': 'sensor',
+                                'state_class': 'measurement',
+                                'name': f'Oil level ({drive_id})',
+                                'icon': 'mdi:oil-level',
+                                'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.oil_level.get_absolute_path()}',
+                                'unique_id': f'{vin}_{drive_id}_oil_level'
+                            }
+                            if drive.oil_level.unit is not None:
+                                _, unit = drive.oil_level.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                if unit is not None:
+                                    discovery_message['cmps'][f'{vin}_{drive_id}_oil_level']['unit_of_measurement'] = unit.value
                         if isinstance(drive, DieselDrive):
                             if drive.adblue_level.enabled and drive.adblue_level.value is not None:
                                 discovery_message['cmps'][f'{vin}_{drive_id}_adbluelevel'] = {

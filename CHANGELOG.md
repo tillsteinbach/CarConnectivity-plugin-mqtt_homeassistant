@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 ### Added
 - Publish a Home Assistant binary_sensor for the vehicle's `parking_brake`
+- Publish Home Assistant discovery for the combustion drive's `oil_level` (engine oil level)
 
 ## [0.6.5] - 2026-04-24
 ### Changed
