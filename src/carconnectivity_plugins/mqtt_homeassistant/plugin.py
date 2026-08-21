@@ -535,6 +535,34 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                                     _, unit = drive.battery.temperature.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
                                     if unit is not None:
                                         discovery_message['cmps'][f'{vin}_{drive_id}_battery_temperature']['unit_of_measurement'] = unit.value
+                            if drive.battery.temperature_min.enabled and drive.battery.temperature_min.value is not None:
+                                discovery_message['cmps'][f'{vin}_{drive_id}_battery_temperature_min'] = {
+                                    'p': 'sensor',
+                                    'device_class': 'temperature',
+                                    'state_class': 'measurement',
+                                    'icon': 'mdi:thermometer-chevron-down',
+                                    'name': f'Battery Temperature Min ({drive_id})',
+                                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.battery.temperature_min.get_absolute_path()}',
+                                    'unique_id': f'{vin}_{drive_id}_battery_temperature_min'
+                                }
+                                if drive.battery.temperature_min.unit is not None:
+                                    _, unit = drive.battery.temperature_min.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                    if unit is not None:
+                                        discovery_message['cmps'][f'{vin}_{drive_id}_battery_temperature_min']['unit_of_measurement'] = unit.value
+                            if drive.battery.temperature_max.enabled and drive.battery.temperature_max.value is not None:
+                                discovery_message['cmps'][f'{vin}_{drive_id}_battery_temperature_max'] = {
+                                    'p': 'sensor',
+                                    'device_class': 'temperature',
+                                    'state_class': 'measurement',
+                                    'icon': 'mdi:thermometer-chevron-up',
+                                    'name': f'Battery Temperature Max ({drive_id})',
+                                    'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{drive.battery.temperature_max.get_absolute_path()}',
+                                    'unique_id': f'{vin}_{drive_id}_battery_temperature_max'
+                                }
+                                if drive.battery.temperature_max.unit is not None:
+                                    _, unit = drive.battery.temperature_max.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                                    if unit is not None:
+                                        discovery_message['cmps'][f'{vin}_{drive_id}_battery_temperature_max']['unit_of_measurement'] = unit.value
                             if drive.battery.total_capacity.enabled and drive.battery.total_capacity.value is not None:
                                 discovery_message['cmps'][f'{vin}_{drive_id}_battery_total_capacity'] = {
                                     'p': 'sensor',
