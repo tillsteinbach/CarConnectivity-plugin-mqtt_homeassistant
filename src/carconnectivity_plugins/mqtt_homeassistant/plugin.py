@@ -273,6 +273,25 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 'payload_press': 'wake',
                 'unique_id': f'{vin}_wake'
             }
+        if vehicle.commands.enabled and 'remote-start' in vehicle.commands.commands:
+            discovery_message['cmps'][f'{vin}_remote_start'] = {
+                'p': 'button',
+                'name': 'Remote Start Engine',
+                'icon': 'mdi:engine',
+                'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.commands.commands["remote-start"].get_absolute_path()}'
+                + '_writetopic',
+                'payload_press': 'start',
+                'unique_id': f'{vin}_remote_start'
+            }
+            discovery_message['cmps'][f'{vin}_remote_stop'] = {
+                'p': 'button',
+                'name': 'Remote Stop Engine',
+                'icon': 'mdi:engine-off',
+                'command_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.commands.commands["remote-start"].get_absolute_path()}'
+                + '_writetopic',
+                'payload_press': 'stop',
+                'unique_id': f'{vin}_remote_stop'
+            }
         if vehicle.odometer.enabled and vehicle.odometer.value is not None:
             discovery_message['cmps'][f'{vin}_odometer'] = {
                 'p': 'sensor',
