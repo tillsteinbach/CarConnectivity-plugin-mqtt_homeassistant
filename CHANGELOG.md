@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- Publish Home Assistant discovery for connector-defined attributes (tag `connector_custom`), typed from the attribute: binary_sensor, enum, timestamp or measurement sensor with unit
 
 ## [0.6.6] - 2026-07-05
 ### Added

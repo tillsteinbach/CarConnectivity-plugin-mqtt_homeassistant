@@ -11,7 +11,8 @@ from carconnectivity.vehicle import GenericVehicle, ElectricVehicle
 from carconnectivity.drive import ElectricDrive, CombustionDrive, DieselDrive
 from carconnectivity.observable import Observable
 from carconnectivity.errors import ConfigurationError
-from carconnectivity.attributes import FloatAttribute, EnumAttribute, GenericAttribute
+from carconnectivity.attributes import FloatAttribute, EnumAttribute, GenericAttribute, BooleanAttribute, DateAttribute, EnergyAttribute, \
+    PowerAttribute, CurrentAttribute, TemperatureAttribute, RangeAttribute, SpeedAttribute
 from carconnectivity.position import Position
 from carconnectivity.charging import Charging
 from carconnectivity.doors import Doors
@@ -43,6 +44,17 @@ if TYPE_CHECKING:
     from carconnectivity.carconnectivity import CarConnectivity
 
 LOG: logging.Logger = logging.getLogger("carconnectivity.plugins.mqtt_homeassistant")
+
+# Home Assistant device class for numeric connector_custom attributes, by attribute type. Stored energy is
+# 'energy_storage' (a level that goes up and down), not 'energy' (a meter).
+CUSTOM_DEVICE_CLASSES = (
+    (EnergyAttribute, 'energy_storage'),
+    (PowerAttribute, 'power'),
+    (CurrentAttribute, 'current'),
+    (TemperatureAttribute, 'temperature'),
+    (RangeAttribute, 'distance'),
+    (SpeedAttribute, 'speed'),
+)
 
 
 class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
@@ -1077,6 +1089,11 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                 'source_type': 'gps',
                 'unique_id': f'{vin}_position'
             }
+        # Generic entities for connector-defined attributes, unless a dedicated entity above already covers the topic.
+        known_topics = {component.get('state_topic') for component in discovery_message['cmps'].values()}
+        for component_id, component in self._connector_custom_components(vehicle).items():
+            if component['state_topic'] not in known_topics:
+                discovery_message['cmps'].setdefault(component_id, component)
         for sensor in discovery_message['cmps'].values():
             sensor['availability'] = [{
                 'topic': f'{self.mqtt_plugin.mqtt_client.prefix}{self.mqtt_plugin.connection_state.get_absolute_path()}',
@@ -1089,6 +1106,61 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
             self.homeassistant_discovery_hashes[vin] = discovery_hash
             LOG.debug("Publishing Home Assistant discovery message for vehicle %s", vin)
             self.mqtt_plugin.mqtt_client.publish(topic=discovery_topic, qos=1, retain=False, payload=json.dumps(discovery_message, indent=4))
+
+    def _connector_custom_components(self, vehicle: GenericVehicle) -> Dict[str, Dict[str, Any]]:
+        """
+        Build read-only Home Assistant components for connector-defined attributes.
+
+        Connectors expose data the core has no model for as attributes tagged 'connector_custom'. The MQTT plugin
+        already publishes them; this makes them discoverable without a per-attribute change here. The entity kind
+        follows the attribute type: binary_sensor for booleans, enum sensor for enums, timestamp sensor for dates,
+        and a measurement sensor with unit (and device class where one fits) for numbers.
+
+        Args:
+            vehicle (GenericVehicle): The vehicle whose attributes are scanned.
+
+        Returns:
+            Dict[str, Dict[str, Any]]: Components keyed by their unique id.
+        """
+        if self.mqtt_plugin is None or vehicle.vin.value is None:
+            return {}
+        vin: str = vehicle.vin.value
+        vehicle_path: str = vehicle.get_absolute_path()
+        components: Dict[str, Dict[str, Any]] = {}
+        for attribute in vehicle.get_attributes(recursive=True):
+            if 'connector_custom' not in attribute.tags or not attribute.enabled or attribute.value is None:
+                continue
+            path: str = attribute.get_absolute_path()
+            relative_path: str = path[len(vehicle_path):].strip('/') if path.startswith(vehicle_path) else attribute.id
+            unique_id: str = f'{vin}_{relative_path.replace("/", "_")}'
+            component: Dict[str, Any] = {
+                'p': 'sensor',
+                'name': attribute.id.replace('_', ' ').title(),
+                'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{path}',
+                'unique_id': unique_id,
+            }
+            if isinstance(attribute, BooleanAttribute):
+                component['p'] = 'binary_sensor'
+                component['payload_on'] = 'True'
+                component['payload_off'] = 'False'
+            elif isinstance(attribute, EnumAttribute):
+                component['device_class'] = 'enum'
+                if attribute.value_type is not None and issubclass(attribute.value_type, Enum):
+                    component['options'] = [item.value for item in attribute.value_type]
+            elif isinstance(attribute, DateAttribute):
+                component['device_class'] = 'timestamp'
+            elif isinstance(attribute, FloatAttribute):
+                component['state_class'] = 'measurement'
+                for attribute_type, device_class in CUSTOM_DEVICE_CLASSES:
+                    if isinstance(attribute, attribute_type):
+                        component['device_class'] = device_class
+                        break
+                if attribute.unit is not None:
+                    _, unit = attribute.in_locale(locale=self.mqtt_plugin.mqtt_client.locale)
+                    if unit is not None:
+                        component['unit_of_measurement'] = unit.value
+            components[unique_id] = component
+        return components
 
     def __send_position_extra_targets(self, position: Position) -> None:
         if self.mqtt_plugin is None:
