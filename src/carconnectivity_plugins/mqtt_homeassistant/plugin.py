@@ -1057,12 +1057,15 @@ class Plugin(BasePlugin):  # pylint: disable=too-many-instance-attributes
                         'name': 'Auto unlock charging connector',
                         'icon': 'mdi:lock',
                         'state_topic': f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.auto_unlock.get_absolute_path()}',
-                        'state_on': 'on',
-                        'state_off': 'off',
+                        # auto_unlock is a BooleanAttribute, which the MQTT plugin publishes as True / False
+                        'payload_on': 'True',
+                        'payload_off': 'False',
                         'unique_id': f'{vin}_charging_auto_unlock'
                     }
                     if vehicle.charging.settings.auto_unlock.is_changeable:
                         discovery_message['cmps'][f'{vin}_charging_auto_unlock']['p'] = 'switch'
+                        discovery_message['cmps'][f'{vin}_charging_auto_unlock']['state_on'] = 'True'
+                        discovery_message['cmps'][f'{vin}_charging_auto_unlock']['state_off'] = 'False'
                         discovery_message['cmps'][f'{vin}_charging_auto_unlock']['command_topic'] = \
                             f'{self.mqtt_plugin.mqtt_client.prefix}{vehicle.charging.settings.auto_unlock.get_absolute_path()}_writetopic'
                         discovery_message['cmps'][f'{vin}_charging_auto_unlock']['payload_on'] = 'on'

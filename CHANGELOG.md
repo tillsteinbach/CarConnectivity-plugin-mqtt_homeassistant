@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Fixed
+- Auto unlock charging connector entity stayed unknown: match the `True` / `False` the MQTT plugin publishes for this boolean instead of `on` / `off`
 
 ## [0.6.6] - 2026-07-05
 ### Added
